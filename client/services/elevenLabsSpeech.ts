@@ -2,9 +2,12 @@ import Constants from 'expo-constants';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 
-const ELEVEN_LABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
-const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel
-const MODEL_ID = 'eleven_turbo_v2_5';
+function getApiBaseUrl(): string | undefined {
+  return (
+    process.env.EXPO_PUBLIC_API_URL ??
+    Constants.expoConfig?.extra?.apiUrl
+  );
+}
 
 function getApiKey(): string | undefined {
   return (
@@ -31,18 +34,28 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return result;
 }
 
-/**
- * Speaks the given text using Eleven Labs TTS.
- * Fetches audio, writes to temp file, plays with expo-av, then cleans up.
- * Throws if API key is missing or request fails.
- */
-export async function speakWithElevenLabs(text: string): Promise<void> {
+async function fetchAudioFromServer(text: string): Promise<ArrayBuffer> {
+  const baseUrl = getApiBaseUrl()?.trim();
+  if (!baseUrl) throw new Error('Server API URL is not configured. Set EXPO_PUBLIC_API_URL.');
+  const url = `${baseUrl.replace(/\/$/, '')}/tts`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`TTS failed: ${response.status} ${errText}`);
+  }
+  return response.arrayBuffer();
+}
+
+async function fetchAudioFromElevenLabs(text: string): Promise<ArrayBuffer> {
   const apiKey = getApiKey();
   if (!apiKey?.trim()) {
     throw new Error('Eleven Labs API key is not configured. Set EXPO_PUBLIC_ELEVEN_LABS_API_KEY.');
   }
-
-  const url = `${ELEVEN_LABS_API_URL}/${DEFAULT_VOICE_ID}`;
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -50,18 +63,25 @@ export async function speakWithElevenLabs(text: string): Promise<void> {
       'xi-api-key': apiKey,
       Accept: 'audio/mpeg',
     },
-    body: JSON.stringify({
-      text,
-      model_id: MODEL_ID,
-    }),
+    body: JSON.stringify({ text, model_id: 'eleven_turbo_v2_5' }),
   });
-
   if (!response.ok) {
     const errText = await response.text();
     throw new Error(`Eleven Labs TTS failed: ${response.status} ${errText}`);
   }
+  return response.arrayBuffer();
+}
 
-  const arrayBuffer = await response.arrayBuffer();
+/**
+ * Speaks the given text using Eleven Labs TTS.
+ * Uses server /tts when EXPO_PUBLIC_API_URL is set, otherwise calls Eleven Labs directly.
+ * Fetches audio, writes to temp file, plays with expo-av, then cleans up.
+ */
+export async function speakWithElevenLabs(text: string): Promise<void> {
+  const arrayBuffer = getApiBaseUrl()?.trim()
+    ? await fetchAudioFromServer(text)
+    : await fetchAudioFromElevenLabs(text);
+
   const base64 = arrayBufferToBase64(arrayBuffer);
   const tempUri = `${FileSystem.cacheDirectory}tts-${Date.now()}.mp3`;
 
@@ -97,6 +117,7 @@ export async function speakWithElevenLabs(text: string): Promise<void> {
   });
 }
 
+/** True if TTS is available (server URL or Eleven Labs API key set). */
 export function isElevenLabsConfigured(): boolean {
-  return Boolean(getApiKey()?.trim());
+  return Boolean(getApiBaseUrl()?.trim() || getApiKey()?.trim());
 }
