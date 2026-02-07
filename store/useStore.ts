@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import storage from './storage';
 import type { DailyScreenTime, Goal, Settings } from './types';
 
 type PersistedState = {
@@ -89,7 +89,7 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'productivity-coach-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
       partialize: (state) => ({
         goals: state.goals,
         settings: state.settings,

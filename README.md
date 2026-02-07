@@ -25,6 +25,15 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+### Eleven Labs (affirmation voice)
+
+The dashboard can speak affirmations using Eleven Labs text-to-speech. Set your API key (get one at [elevenlabs.io](https://elevenlabs.io)):
+
+- **Option A**: Create a `.env` file (see `.env.example`) with `EXPO_PUBLIC_ELEVEN_LABS_API_KEY=your_key`
+- **Option B**: Set the environment variable before running: `EXPO_PUBLIC_ELEVEN_LABS_API_KEY=your_key npx expo start`
+
+If the key is not set, the affirmation "Play" button will show an error; the rest of the app works without it.
+
 ## Get a fresh project
 
 When you're ready, run:
