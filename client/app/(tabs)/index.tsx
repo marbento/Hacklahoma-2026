@@ -7,8 +7,14 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  TouchableOpacity as RNTouchableOpacity,
   View,
 } from 'react-native';
+import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
+
+// gesture-handler TouchableOpacity doesn't handle web clicks; use RN on web
+const TouchableOpacity =
+  Platform.OS === 'web' ? RNTouchableOpacity : GHTouchableOpacity;
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -16,6 +22,7 @@ import { ThemedView } from '@/components/themed-view';
 import { getInsight } from '@/services/insightsEngine';
 import {
   isElevenLabsConfigured,
+  MALE_VOICE_ID,
   speakWithElevenLabs,
 } from '@/services/elevenLabsSpeech';
 import { getMockScreenTimeForDay } from '@/services/screenTime';
@@ -46,11 +53,28 @@ export default function HomeScreen() {
   );
 
   const [affirmationLoading, setAffirmationLoading] = useState(false);
+  const [helloLoading, setHelloLoading] = useState(false);
+  const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [suggestionPlaying, setSuggestionPlaying] = useState(false);
+
+  const handleSaveToday = useCallback(() => {
+    console.log('[Home] Save today\'s data button pressed');
+    appendScreenTimeDay(todayScreenTime);
+    console.log('[Home] Today\'s data saved:', {
+      date: todayScreenTime.date,
+      totalMinutes: todayScreenTime.totalMinutes,
+      entriesCount: todayScreenTime.entries.length,
+    });
+    setSavedMessage('Saved!');
+    setTimeout(() => setSavedMessage(null), 2000);
+  }, [appendScreenTimeDay, todayScreenTime]);
 
   const playSuggestion = useCallback(() => {
     if (!settings.voiceEnabled) return;
     speechStop();
     speechSpeak(insight.suggestion);
+    setSuggestionPlaying(true);
+    setTimeout(() => setSuggestionPlaying(false), 1500);
   }, [insight.suggestion, settings.voiceEnabled]);
 
   const playAffirmation = useCallback(async () => {
@@ -85,6 +109,31 @@ export default function HomeScreen() {
     await run();
   }, [insight.affirmation, affirmationLoading, settings.voiceEnabled]);
 
+  const playHelloMale = useCallback(async () => {
+    if (helloLoading) return;
+    setHelloLoading(true);
+    try {
+      if (Platform.OS === 'ios') {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+          interruptionModeAndroid: 1,
+          interruptionModeIOS: 1,
+        });
+      }
+      await speakWithElevenLabs('hello', {
+        voiceId: MALE_VOICE_ID,
+        useServerOnly: true,
+      });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Playback failed';
+      Alert.alert('Say hello', message);
+    } finally {
+      setHelloLoading(false);
+    }
+  }, [helloLoading]);
+
   const byCategory = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of todayScreenTime.entries) {
@@ -106,6 +155,24 @@ export default function HomeScreen() {
       </ThemedView>
 
       <ThemedView style={styles.card}>
+        <ThemedText type="subtitle">Say hello</ThemedText>
+        <ThemedText style={styles.body}>
+          Play &quot;hello&quot; in a male voice (Eleven Labs).
+        </ThemedText>
+        <Pressable
+          style={[styles.button, helloLoading && styles.buttonDisabled]}
+          onPress={playHelloMale}
+          disabled={helloLoading}
+        >
+          {helloLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <ThemedText style={styles.buttonText}>Say hello</ThemedText>
+          )}
+        </Pressable>
+      </ThemedView>
+
+      <ThemedView style={styles.card}>
         <ThemedText type="subtitle">Today&apos;s screen time</ThemedText>
         <ThemedText style={styles.summary}>
           {todayScreenTime.totalMinutes} min total · {todayScreenTime.entries.length} apps
@@ -118,12 +185,17 @@ export default function HomeScreen() {
           </ThemedText>
         )}
         {!hasTodayInHistory && (
-          <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={() => appendScreenTimeDay(todayScreenTime)}
+          <TouchableOpacity
+            style={styles.button}
+            activeOpacity={0.8}
+            onPressIn={() => console.log('[Home] Save button touch started')}
+            onPress={handleSaveToday}
           >
             <ThemedText style={styles.buttonText}>Save today&apos;s data</ThemedText>
-          </Pressable>
+          </TouchableOpacity>
+        )}
+        {savedMessage && (
+          <ThemedText style={styles.feedbackText}>{savedMessage}</ThemedText>
         )}
       </ThemedView>
 
@@ -131,12 +203,19 @@ export default function HomeScreen() {
         <ThemedText type="subtitle">Suggestion</ThemedText>
         <ThemedText style={styles.body}>{insight.suggestion}</ThemedText>
         {settings.voiceEnabled && (
-          <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={playSuggestion}
-          >
-            <ThemedText style={styles.buttonText}>Play</ThemedText>
-          </Pressable>
+          <>
+            <Pressable
+              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+              onPress={playSuggestion}
+            >
+              <ThemedText style={styles.buttonText}>
+                {suggestionPlaying ? 'Playing…' : 'Play'}
+              </ThemedText>
+            </Pressable>
+            {suggestionPlaying && (
+              <ThemedText style={styles.feedbackText}>Speaking suggestion…</ThemedText>
+            )}
+          </>
         )}
       </ThemedView>
 
@@ -196,13 +275,20 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     marginTop: 4,
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: '#0a7ea4',
     borderRadius: 8,
-    minWidth: 72,
+    minWidth: 88,
     alignItems: 'center',
+  },
+  feedbackText: {
+    fontSize: 14,
+    marginTop: 6,
+    opacity: 0.9,
   },
   buttonPressed: {
     opacity: 0.8,

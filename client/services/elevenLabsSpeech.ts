@@ -34,14 +34,22 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return result;
 }
 
-async function fetchAudioFromServer(text: string): Promise<ArrayBuffer> {
+/** Eleven Labs male voice (Adam). Use with speakWithElevenLabs(text, { voiceId: MALE_VOICE_ID }). */
+export const MALE_VOICE_ID = 'pNInz6obpgDQGcFmaJgB';
+
+async function fetchAudioFromServer(
+  text: string,
+  voiceId?: string
+): Promise<ArrayBuffer> {
   const baseUrl = getApiBaseUrl()?.trim();
   if (!baseUrl) throw new Error('Server API URL is not configured. Set EXPO_PUBLIC_API_URL.');
   const url = `${baseUrl.replace(/\/$/, '')}/tts`;
+  const body: { text: string; voice_id?: string } = { text };
+  if (voiceId?.trim()) body.voice_id = voiceId.trim();
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     const errText = await response.text();
@@ -50,12 +58,18 @@ async function fetchAudioFromServer(text: string): Promise<ArrayBuffer> {
   return response.arrayBuffer();
 }
 
-async function fetchAudioFromElevenLabs(text: string): Promise<ArrayBuffer> {
+const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel
+
+async function fetchAudioFromElevenLabs(
+  text: string,
+  voiceId?: string
+): Promise<ArrayBuffer> {
   const apiKey = getApiKey();
   if (!apiKey?.trim()) {
     throw new Error('Eleven Labs API key is not configured. Set EXPO_PUBLIC_ELEVEN_LABS_API_KEY.');
   }
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM`;
+  const vid = voiceId?.trim() || DEFAULT_VOICE_ID;
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${vid}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -72,15 +86,26 @@ async function fetchAudioFromElevenLabs(text: string): Promise<ArrayBuffer> {
   return response.arrayBuffer();
 }
 
+export type SpeakOptions = {
+  voiceId?: string;
+  /** If true, only use the FastAPI /tts route; throw if server URL is not set. */
+  useServerOnly?: boolean;
+};
+
 /**
  * Speaks the given text using Eleven Labs TTS.
- * Uses server /tts when EXPO_PUBLIC_API_URL is set, otherwise calls Eleven Labs directly.
- * Fetches audio, writes to temp file, plays with expo-av, then cleans up.
+ * When useServerOnly is true, only uses the FastAPI /tts route.
+ * Otherwise uses server when EXPO_PUBLIC_API_URL is set, else Eleven Labs directly.
+ * options.voiceId: optional Eleven Labs voice ID (e.g. MALE_VOICE_ID for male voice).
  */
-export async function speakWithElevenLabs(text: string): Promise<void> {
-  const arrayBuffer = getApiBaseUrl()?.trim()
-    ? await fetchAudioFromServer(text)
-    : await fetchAudioFromElevenLabs(text);
+export async function speakWithElevenLabs(
+  text: string,
+  options?: SpeakOptions
+): Promise<void> {
+  const useServer = options?.useServerOnly ?? Boolean(getApiBaseUrl()?.trim());
+  const arrayBuffer = useServer
+    ? await fetchAudioFromServer(text, options?.voiceId)
+    : await fetchAudioFromElevenLabs(text, options?.voiceId);
 
   const base64 = arrayBufferToBase64(arrayBuffer);
   const tempUri = `${FileSystem.cacheDirectory}tts-${Date.now()}.mp3`;
