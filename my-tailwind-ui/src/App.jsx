@@ -125,26 +125,26 @@ function App() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#f7f2ff] text-[#16141f] font-pixel">
+    <div className="relative min-h-screen bg-[#f3efe4] text-[#2c2a23] font-editorial">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 right-10 h-80 w-80 rounded-full bg-[#ffb347]/40 blur-3xl" />
-        <div className="absolute bottom-[-80px] left-[-40px] h-96 w-96 rounded-full bg-[#6ee7ff]/40 blur-3xl" />
-        <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(#2d23451a_1px,transparent_1px)] [background-size:18px_18px]" />
+        <div className="absolute -top-24 right-10 h-80 w-80 rounded-full bg-[#d7b67a]/30 blur-3xl" />
+        <div className="absolute bottom-[-80px] left-[-40px] h-96 w-96 rounded-full bg-[#9bbd9b]/35 blur-3xl" />
+        <div className="absolute inset-0 opacity-50 [background-image:radial-gradient(#5e5a4a1a_1px,transparent_1px)] [background-size:18px_18px]" />
       </div>
 
       <div className="relative z-10 flex min-h-screen items-center justify-center p-6">
-        <div className="relative rounded-[48px] bg-gradient-to-br from-white via-white/70 to-white/30 p-[2px] shadow-[0_30px_90px_rgba(58,38,97,0.25)]">
-          <div className="relative h-[680px] w-[330px] overflow-hidden rounded-[46px] bg-gradient-to-b from-white via-[#f9f6ff] to-[#f1ecff]">
-            <div className="absolute left-1/2 top-3 h-6 w-32 -translate-x-1/2 rounded-full border border-black/10 bg-white/80" />
+        <div className="relative rounded-[48px] bg-gradient-to-br from-white/90 via-white/70 to-white/40 p-[2px] shadow-[0_30px_90px_rgba(79,70,51,0.35)]">
+          <div className="relative h-[680px] w-[330px] overflow-hidden rounded-[46px] bg-gradient-to-b from-[#fdfaf2] via-[#f6f1e6] to-[#ece4d2]">
+            <div className="absolute left-1/2 top-3 h-6 w-32 -translate-x-1/2 rounded-full border border-[#cfc7b8] bg-[#f7f2e6]" />
 
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between px-5 pt-5 text-xs text-[#5f5a73]">
-                <span className="font-medium tracking-[0.2em]">10:42</span>
+              <div className="flex items-center justify-between px-5 pt-5 text-xs text-[#6f6a5c]">
+                <span className="font-stamp text-[10px]">10:42</span>
                 <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70" />
-                  <div className="flex h-3 w-6 items-center justify-start rounded-full border border-black/20 px-0.5">
-                    <div className="h-2 w-3 rounded-full bg-[#1a1528]/70" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#6f7758]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#6f7758]/70" />
+                  <div className="flex h-3 w-6 items-center justify-start rounded-full border border-[#cfc7b8] px-0.5">
+                    <div className="h-2 w-3 rounded-full bg-[#3b3528]/70" />
                   </div>
                 </div>
               </div>
@@ -155,17 +155,17 @@ function App() {
                     {/* Header with stats */}
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Your Journey</p>
-                        <h1 className="mt-2 text-2xl font-semibold">The Trail</h1>
+                        <p className="text-xs uppercase tracking-[0.3em] text-[#7c7666]">Your Journey</p>
+                        <h1 className="mt-2 text-3xl font-semibold italic text-[#3b3528] font-display">The Trail</h1>
                       </div>
-                      <div className="flex items-center gap-1 rounded-xl bg-white px-2 py-1 shadow-md">
+                      <div className="flex items-center gap-1 rounded-xl bg-[#fbf8ef] px-2 py-1 shadow-md">
                         <span className="text-lg">👣</span>
-                        <span className="text-xs font-bold text-[#3c2e62]">{totalSteps}</span>
+                        <span className="text-xs font-bold text-[#3b3528]">{totalSteps}</span>
                       </div>
                     </div>
 
                     {/* Trail View */}
-                    <div className="relative mt-6 h-[450px] overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-b from-[#e8f4ff] via-[#f0e8ff] to-[#ffe8f4] p-4 shadow-[0_16px_30px_rgba(87,61,140,0.12)]">
+                    <div className="relative mt-6 h-[450px] overflow-hidden rounded-3xl border border-[#d8d0c2] bg-gradient-to-b from-[#efe8d8] via-[#f4eddc] to-[#efe1c8] p-4 shadow-[0_16px_30px_rgba(79,70,51,0.18)]">
                       {/* Trail tiles - winding path from bottom to top */}
                       <div className="relative h-full">
                         {/* Generate 20 tiles in a winding pattern */}
@@ -213,16 +213,16 @@ function App() {
                               }}
                             >
                               {/* Tile */}
-                              <div
-                                className={`h-8 w-8 rounded-lg border-2 transition-all ${
-                                  isPastTile
-                                    ? 'border-emerald-400 bg-emerald-100'
-                                    : isCurrentTile
-                                    ? 'border-cyan-400 bg-cyan-100 shadow-lg'
-                                    : 'border-gray-300 bg-white/60'
-                                }`}
-                                style={{ imageRendering: 'pixelated' }}
-                              />
+                                <div
+                                  className={`h-8 w-8 rounded-lg border-2 transition-all ${
+                                    isPastTile
+                                      ? 'border-[#8f9974] bg-[#dfe6cf]'
+                                      : isCurrentTile
+                                      ? 'border-[#a7b48a] bg-[#e8edd8] shadow-lg'
+                                      : 'border-[#cfc7b8] bg-[#fdf9f0]'
+                                  }`}
+                                  style={{ imageRendering: 'pixelated' }}
+                                />
 
                               {/* Avatar on current tile */}
                               {isCurrentTile && (
@@ -256,9 +256,9 @@ function App() {
                     </div>
 
                     {/* Trail Progress Summary */}
-                    <div className="mt-4 rounded-2xl border border-white/60 bg-white p-3 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Progress</p>
-                      <div className="mt-2 flex items-center justify-between text-sm text-[#2f254b]">
+                    <div className="mt-4 rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-3 shadow-[0_14px_26px_rgba(79,70,51,0.18)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Progress</p>
+                      <div className="mt-2 flex items-center justify-between text-sm text-[#3b3528]">
                         <span className="font-semibold">{stepsInvested}/{totalStepsNeeded} steps</span>
                         <span className="font-semibold">{dashboardProgressClamped}% completed</span>
                       </div>
@@ -266,28 +266,28 @@ function App() {
 
                     {/* Time Saved / Time Lost */}
                     <div
-                      className="mt-4 cursor-pointer rounded-2xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)] transition-all hover:shadow-[0_18px_34px_rgba(87,61,140,0.16)]"
+                      className="mt-4 cursor-pointer rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-4 shadow-[0_14px_26px_rgba(79,70,51,0.18)] transition-all hover:shadow-[0_18px_34px_rgba(79,70,51,0.2)]"
                       onClick={() => setTimeCardExpanded(prev => !prev)}
                     >
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#8a83a3]">
+                      <p className="text-xs uppercase tracking-[0.2em] text-[#7c7666]">
                         {netMinutes >= 0 ? 'Time Saved' : 'Time Lost'}
                       </p>
-                      <p className={`mt-2 text-3xl font-bold ${netMinutes >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <p className={`mt-2 text-3xl font-bold ${netMinutes >= 0 ? 'text-[#6f7758]' : 'text-[#b07d5b]'}`}>
                         {netMinutes >= 0 ? '+' : '-'}{formatMinutes(Math.abs(netMinutes))}
                       </p>
                       {timeCardExpanded && (
-                        <div className="mt-3 space-y-2 border-t border-[#f2ecff] pt-3">
+                        <div className="mt-3 space-y-2 border-t border-[#e8e0d1] pt-3">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm text-[#6b6286]">Productive time</p>
-                            <p className="text-sm font-bold text-emerald-600">+{formatMinutes(investedMinutes)}</p>
+                            <p className="text-sm text-[#6f6a5c]">Productive time</p>
+                            <p className="text-sm font-bold text-[#6f7758]">+{formatMinutes(investedMinutes)}</p>
                           </div>
                           <div className="flex items-center justify-between">
-                            <p className="text-sm text-[#6b6286]">Unproductive time</p>
-                            <p className="text-sm font-bold text-red-500">-{formatMinutes(lostMinutes)}</p>
+                            <p className="text-sm text-[#6f6a5c]">Unproductive time</p>
+                            <p className="text-sm font-bold text-[#b07d5b]">-{formatMinutes(lostMinutes)}</p>
                           </div>
-                          <div className="flex items-center justify-between border-t border-[#f2ecff] pt-2">
-                            <p className="text-sm font-semibold text-[#2f254b]">Net result</p>
-                            <p className={`text-sm font-bold ${netMinutes >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                          <div className="flex items-center justify-between border-t border-[#e8e0d1] pt-2">
+                            <p className="text-sm font-semibold text-[#3b3528]">Net result</p>
+                            <p className={`text-sm font-bold ${netMinutes >= 0 ? 'text-[#6f7758]' : 'text-[#b07d5b]'}`}>
                               {netMinutes >= 0 ? '+' : '-'}{formatMinutes(Math.abs(netMinutes))}
                             </p>
                           </div>
@@ -297,37 +297,37 @@ function App() {
 
                     {/* Recent App Activities */}
                     <div className="mt-6">
-                      <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Recent Activities</h3>
+                      <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Recent Activities</h3>
                       <div className="mt-3 space-y-2">
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                        <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-sm font-semibold">Deep Focus</p>
-                              <p className="text-xs text-[#6b6286]">2h in Canvas</p>
+                              <p className="text-xs text-[#6f6a5c]">2h in Canvas</p>
                             </div>
-                            <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-xs text-emerald-700">+2 👣</span>
+                            <span className="rounded-full bg-[#dfe6cf] px-2 py-1 text-xs text-[#6f7758]">+2 👣</span>
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                        <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-sm font-semibold">Project Work</p>
-                              <p className="text-xs text-[#6b6286]">1h 30m in Notion</p>
+                              <p className="text-xs text-[#6f6a5c]">1h 30m in Notion</p>
                             </div>
-                            <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-xs text-emerald-700">+1 👣</span>
+                            <span className="rounded-full bg-[#dfe6cf] px-2 py-1 text-xs text-[#6f7758]">+1 👣</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Old code kept below for reference - will delete once trail is finalized */}
-                    <details className="group mt-6 rounded-3xl border border-white/60 bg-white/80 p-4 shadow-[0_16px_30px_rgba(87,61,140,0.12)]" style={{ display: 'none' }}>
+                    <details className="group mt-6 rounded-3xl border border-[#d8d0c2] bg-[#fbf8ef]/80 p-4 shadow-[0_16px_30px_rgba(79,70,51,0.18)]" style={{ display: 'none' }}>
                       <summary className="cursor-pointer list-none">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Past Week Summary</p>
+                            <p className="text-xs uppercase tracking-[0.2em] text-[#7c7666]">Past Week Summary</p>
                           </div>
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f2ecff] text-[#6b6286]">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e8e0d1] text-[#6f6a5c]">
                             <svg
                               width="18"
                               height="18"
@@ -362,7 +362,7 @@ function App() {
                                 <img src={hair2Svg} alt="Hair" className="pointer-events-none absolute inset-0 h-full w-full" style={{ imageRendering: 'pixelated' }} />
                               )}
                             </div>
-                            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Past</p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#7c7666]">Past</p>
                           </div>
 
                           {/* Now Avatar */}
@@ -386,7 +386,7 @@ function App() {
                                 <img src={hair2Svg} alt="Hair" className="pointer-events-none absolute inset-0 h-full w-full" style={{ imageRendering: 'pixelated' }} />
                               )}
                             </div>
-                            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Present</p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#7c7666]">Present</p>
                           </div>
 
                           {/* Future Avatar */}
@@ -410,12 +410,12 @@ function App() {
                                 <img src={hair2Svg} alt="Hair" className="pointer-events-none absolute inset-0 h-full w-full" style={{ imageRendering: 'pixelated' }} />
                               )}
                             </div>
-                            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Future</p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#7c7666]">Future</p>
                           </div>
                         </div>
                       </summary>
 
-                      <div className="mt-4 space-y-2 text-sm text-[#5b5270]">
+                      <div className="mt-4 space-y-2 text-sm text-[#6f6a5c]">
                         <p>{summaryCopy.line1}</p>
                         <p>{summaryCopy.line2}</p>
                       </div>
@@ -424,12 +424,12 @@ function App() {
                 )}
 
                 {activeTab === 'goals' && (
-                  <div className="space-y-6 rounded-3xl bg-white/85 p-4 text-[#2f254b] shadow-[0_18px_40px_rgba(87,61,140,0.12)]">
+                  <div className="space-y-6 rounded-3xl bg-[#fbf8ef]/90 p-4 text-[#3b3528] shadow-[0_18px_40px_rgba(79,70,51,0.18)]">
                     {/* Gear Section */}
                     <div>
                       <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8a83a3]">Gear</p>
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-[#9b93b3]">Loadout</span>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#7c7666]">Gear</p>
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-[#8c8576]">Loadout</span>
                       </div>
                       <div className="mt-4 grid grid-cols-3 gap-3">
                         {[
@@ -446,20 +446,20 @@ function App() {
                               key={item.name}
                               className={`relative flex flex-col items-center justify-between rounded-2xl border p-3 text-center shadow-[0_10px_18px_rgba(87,61,140,0.12)] transition ${
                                 isSelected
-                                  ? 'border-[#2f254b] bg-[#f4ecff] ring-1 ring-[#2f254b]/40'
-                                  : 'border-white/70 bg-white'
+                                  ? 'border-[#3b3528] bg-[#efe5d6] ring-1 ring-[#3b3528]/30'
+                                  : 'border-[#d8d0c2] bg-[#fbf8ef]'
                               } ${isLocked ? 'opacity-45' : 'opacity-100'}`}
                             >
                               {isSelected && (
-                                <span className="absolute right-2 top-2 text-xs text-emerald-600">✓</span>
+                                <span className="absolute right-2 top-2 text-xs text-[#6f7758]">✓</span>
                               )}
                               {isLocked && (
-                                <span className="absolute right-2 top-2 text-xs text-[#8a83a3]">🔒</span>
+                                <span className="absolute right-2 top-2 text-xs text-[#7c7666]">🔒</span>
                               )}
                               <span className={`text-3xl ${isLocked ? 'grayscale' : ''}`}>{item.icon}</span>
                               <div className="mt-2">
-                                <p className={`text-[11px] font-semibold ${isLocked ? 'text-[#8a83a3]' : 'text-[#2f254b]'}`}>{item.name}</p>
-                                <p className={`mt-1 text-[9px] ${isLocked ? 'text-[#9b93b3]' : 'text-emerald-600'}`}>{item.helper}</p>
+                                <p className={`text-[11px] font-semibold ${isLocked ? 'text-[#7c7666]' : 'text-[#3b3528]'}`}>{item.name}</p>
+                                <p className={`mt-1 text-[9px] ${isLocked ? 'text-[#8c8576]' : 'text-[#6f7758]'}`}>{item.helper}</p>
                               </div>
                             </div>
                           )
@@ -469,31 +469,31 @@ function App() {
 
                     {/* Integrations Section */}
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8a83a3]">Integrations</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#7c7666]">Integrations</p>
                       <div className="mt-4 space-y-3">
                         {[
-                          { name: 'Notion', detail: 'Tasks', badge: 'N', color: 'bg-purple-200 text-purple-700', connected: true },
-                          { name: 'Google Calendar', detail: 'Events', badge: 'G', color: 'bg-emerald-200 text-emerald-700', connected: true },
-                          { name: 'Canvas', detail: 'Assignments', badge: 'C', color: 'bg-red-200 text-red-700', connected: false },
-                          { name: 'Instagram', detail: 'Usage signals', badge: 'I', color: 'bg-pink-200 text-pink-700', connected: false },
-                          { name: 'Microsoft 365', detail: 'Tasks', badge: 'M', color: 'bg-blue-200 text-blue-700', connected: false },
+                          { name: 'Notion', detail: 'Tasks', badge: 'N', color: 'bg-[#e8e0d1] text-[#6f6a5c]', connected: true },
+                          { name: 'Google Calendar', detail: 'Events', badge: 'G', color: 'bg-[#dfe6cf] text-[#6f7758]', connected: true },
+                          { name: 'Canvas', detail: 'Assignments', badge: 'C', color: 'bg-[#f1d7c5] text-[#b07d5b]', connected: false },
+                          { name: 'Instagram', detail: 'Usage signals', badge: 'I', color: 'bg-[#ecd9c8] text-[#b07d5b]', connected: false },
+                          { name: 'Microsoft 365', detail: 'Tasks', badge: 'M', color: 'bg-[#d9e1cf] text-[#6f7758]', connected: false },
                         ].map((item) => (
                           <div
                             key={item.name}
-                            className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]"
+                            className="flex items-center gap-3 rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] px-4 py-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]"
                           >
                             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color} text-sm font-semibold`}>
                               {item.badge}
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-semibold text-[#2f254b]">{item.name}</p>
-                              <p className="text-[10px] text-[#6b6286]">{item.detail}</p>
+                              <p className="text-sm font-semibold text-[#3b3528]">{item.name}</p>
+                              <p className="text-[10px] text-[#6f6a5c]">{item.detail}</p>
                             </div>
                             {item.connected ? (
-                              <span className="text-xs font-semibold text-emerald-600">✓ Connected</span>
+                              <span className="text-xs font-semibold text-[#6f7758]">✓ Connected</span>
                             ) : (
                               <button
-                                className="rounded-xl border-2 border-[#2f254b] bg-[#e8dcff] px-3 py-1 text-[10px] font-semibold text-[#2f254b]"
+                                className="rounded-xl border-2 border-[#3b3528] bg-[#e6ddc8] px-3 py-1 text-[10px] font-semibold text-[#3b3528]"
                                 type="button"
                               >
                                 Connect
@@ -509,21 +509,21 @@ function App() {
                 {activeTab === 'stats' && (
                   <div className="space-y-4">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Trail Report</p>
-                      <h1 className="mt-2 text-2xl font-semibold">Current Trail Report</h1>
-                      <p className="mt-1 text-xs text-[#6b6286]">Your progress, in game terms</p>
+                      <p className="text-xs uppercase tracking-[0.3em] text-[#7c7666]">Trail Report</p>
+                      <h1 className="mt-2 text-3xl font-semibold italic text-[#3b3528] font-display">Current Trail Report</h1>
+                      <p className="mt-1 text-xs text-[#6f6a5c]">Your progress, in game terms</p>
                     </div>
 
-                    <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#8a83a3]">
+                    <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-4 shadow-[0_14px_26px_rgba(79,70,51,0.18)]">
+                      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#7c7666]">
                         {['today', 'week', 'month'].map((range) => (
                           <button
                             key={range}
                             onClick={() => setReportRange(range)}
                             className={`rounded-full px-3 py-1 transition ${
                               reportRange === range
-                                ? 'bg-[#2f254b] text-white'
-                                : 'border border-[#d8d1ea] text-[#6b6286]'
+                                ? 'bg-[#3b3528] text-[#fbf8ef]'
+                                : 'border border-[#d8d0c2] text-[#6f6a5c]'
                             }`}
                             type="button"
                           >
@@ -533,47 +533,47 @@ function App() {
                       </div>
                       <div className="mt-4 flex items-center justify-between">
                         <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#8a83a3]">{reportSummary.label}</p>
-                          <p className="mt-2 text-3xl font-semibold text-[#2f254b]">{reportSummary.minutes}m</p>
-                          <p className="text-xs text-[#6b6286]">Trail minutes</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#7c7666]">{reportSummary.label}</p>
+                          <p className="mt-2 text-3xl font-semibold text-[#3b3528]">{reportSummary.minutes}m</p>
+                          <p className="text-xs text-[#6f6a5c]">Trail minutes</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-semibold text-[#2f254b]">{reportSummary.steps.toLocaleString()}</p>
-                          <p className="text-xs text-[#6b6286]">Steps gained</p>
-                          <p className="mt-1 text-xs font-semibold text-emerald-600">On trail</p>
+                          <p className="text-2xl font-semibold text-[#3b3528]">{reportSummary.steps.toLocaleString()}</p>
+                          <p className="text-xs text-[#6f6a5c]">Steps gained</p>
+                          <p className="mt-1 text-xs font-semibold text-[#6f7758]">On trail</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Rescues</p>
-                        <p className="mt-2 text-2xl font-semibold text-[#2f254b]">23</p>
-                        <p className="text-xs text-[#6b6286]">Times you chose an alternative</p>
+                      <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-4 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Rescues</p>
+                        <p className="mt-2 text-2xl font-semibold text-[#3b3528]">23</p>
+                        <p className="text-xs text-[#6f6a5c]">Times you chose an alternative</p>
                       </div>
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Night excluded</p>
-                        <p className="mt-2 text-2xl font-semibold text-[#2f254b]">120m</p>
-                        <p className="text-xs text-[#6b6286]">Does not count toward progress</p>
+                      <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-4 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Night excluded</p>
+                        <p className="mt-2 text-2xl font-semibold text-[#3b3528]">120m</p>
+                        <p className="text-xs text-[#6f6a5c]">Does not count toward progress</p>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_12px_22px_rgba(87,61,140,0.12)]">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Trail vs Drift - This Week</p>
+                    <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-4 shadow-[0_12px_22px_rgba(79,70,51,0.18)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Trail vs Drift - This Week</p>
                       <div className="mt-4 grid grid-cols-7 gap-2">
                         {weeklyTrailData.map((item) => {
                           const trailHeight = Math.round((item.trail / weeklyMax) * 100)
                           const driftHeight = Math.round((item.drift / weeklyMax) * 100)
                           return (
-                            <div key={item.day} className="flex flex-col items-center gap-2 text-[10px] text-[#6b6286]">
-                              <div className="flex h-24 w-4 flex-col-reverse overflow-hidden rounded-full bg-[#f2ecff]">
+                            <div key={item.day} className="flex flex-col items-center gap-2 text-[10px] text-[#6f6a5c]">
+                              <div className="flex h-24 w-4 flex-col-reverse overflow-hidden rounded-full bg-[#e8e0d1]">
                                 <div
-                                  className="w-full bg-emerald-400"
+                                  className="w-full bg-[#8fa07a]"
                                   style={{ height: `${trailHeight}%` }}
                                   title={`Trail ${item.trail}m`}
                                 />
                                 <div
-                                  className="w-full bg-rose-300"
+                                  className="w-full bg-[#c89a7b]"
                                   style={{ height: `${driftHeight}%` }}
                                   title={`Drift ${item.drift}m`}
                                 />
@@ -583,31 +583,31 @@ function App() {
                           )
                         })}
                       </div>
-                      <div className="mt-3 flex items-center gap-4 text-[10px] text-[#6b6286]">
+                      <div className="mt-3 flex items-center gap-4 text-[10px] text-[#6f6a5c]">
                         <span className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                          <span className="h-2 w-2 rounded-full bg-[#8fa07a]" />
                           Trail minutes
                         </span>
                         <span className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-rose-300" />
+                          <span className="h-2 w-2 rounded-full bg-[#c89a7b]" />
                           Drift minutes
                         </span>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_12px_22px_rgba(87,61,140,0.12)]">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Common Drift Triggers</p>
+                    <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-4 shadow-[0_12px_22px_rgba(79,70,51,0.18)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Common Drift Triggers</p>
                       <div className="mt-4 space-y-3">
                         {driftTriggers.map((item) => (
-                          <div key={item.name} className="flex items-center gap-3 text-sm text-[#2f254b]">
-                            <span className="w-20 text-xs font-semibold text-[#6b6286]">{item.name}</span>
-                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#f2ecff]">
+                          <div key={item.name} className="flex items-center gap-3 text-sm text-[#3b3528]">
+                            <span className="w-20 text-xs font-semibold text-[#6f6a5c]">{item.name}</span>
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#e8e0d1]">
                               <div
-                                className="h-full rounded-full bg-rose-300"
+                                className="h-full rounded-full bg-[#c89a7b]"
                                 style={{ width: `${Math.round((item.minutes / driftMax) * 100)}%` }}
                               />
                             </div>
-                            <span className="w-12 text-right text-xs text-[#6b6286]">~{item.minutes}m</span>
+                            <span className="w-12 text-right text-xs text-[#6f6a5c]">~{item.minutes}m</span>
                           </div>
                         ))}
                       </div>
@@ -618,14 +618,14 @@ function App() {
                 {activeTab === 'profile' && (
                   <div className="flex h-full flex-col">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Profile</p>
-                      <h1 className="mt-2 text-2xl font-semibold">Avatar Maker</h1>
-                      <p className="mt-1 text-xs text-[#6b6286]">Customize your pixel character</p>
+                      <p className="text-xs uppercase tracking-[0.3em] text-[#7c7666]">Profile</p>
+                      <h1 className="mt-2 text-3xl font-semibold italic text-[#3b3528] font-display">Avatar Maker</h1>
+                      <p className="mt-1 text-xs text-[#6f6a5c]">Customize your pixel character</p>
                     </div>
 
                     {/* Avatar Preview - Large Display */}
-                    <div className="mt-4 flex-1 rounded-3xl border border-white/60 bg-white p-5 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                      <p className="text-center text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Your Avatar</p>
+                    <div className="mt-4 flex-1 rounded-3xl border border-[#d8d0c2] bg-[#fbf8ef] p-5 shadow-[0_14px_26px_rgba(79,70,51,0.18)]">
+                      <p className="text-center text-xs uppercase tracking-[0.2em] text-[#7c7666]">Your Avatar</p>
                       <div className="flex h-full items-center justify-center p-4">
                         {/* 64x64 grid scaled up 3x = 192px for crisp pixels */}
                         <div className="relative" style={{ width: '192px', height: '192px', imageRendering: 'pixelated' }}>
@@ -686,23 +686,23 @@ function App() {
                     {/* Customization Controls - Bottom */}
                     <div className="mt-4 space-y-2">
                       {/* Body Control */}
-                      <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Body</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Body</p>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => setSelectedBody(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c] transition-all hover:bg-[#e6ddc8]"
                               type="button"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
                                 <path d="M15 18L9 12L15 6" />
                               </svg>
                             </button>
-                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#2f254b]">Type {selectedBody + 1}</span>
+                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#3b3528]">Type {selectedBody + 1}</span>
                             <button
                               onClick={() => setSelectedBody(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c] transition-all hover:bg-[#e6ddc8]"
                               type="button"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
@@ -714,23 +714,23 @@ function App() {
                       </div>
 
                       {/* Hair Control */}
-                      <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Hair</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Hair</p>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => setSelectedHair(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c] transition-all hover:bg-[#e6ddc8]"
                               type="button"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
                                 <path d="M15 18L9 12L15 6" />
                               </svg>
                             </button>
-                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#2f254b]">Style {selectedHair + 1}</span>
+                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#3b3528]">Style {selectedHair + 1}</span>
                             <button
                               onClick={() => setSelectedHair(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c] transition-all hover:bg-[#e6ddc8]"
                               type="button"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
@@ -742,23 +742,23 @@ function App() {
                       </div>
 
                       {/* Clothing Control */}
-                      <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef] p-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Clothing</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7c7666]">Clothing</p>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => setSelectedClothing(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c] transition-all hover:bg-[#e6ddc8]"
                               type="button"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
                                 <path d="M15 18L9 12L15 6" />
                               </svg>
                             </button>
-                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#2f254b]">Outfit {selectedClothing + 1}</span>
+                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#3b3528]">Outfit {selectedClothing + 1}</span>
                             <button
                               onClick={() => setSelectedClothing(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c] transition-all hover:bg-[#e6ddc8]"
                               type="button"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
@@ -772,7 +772,7 @@ function App() {
                       {/* Save Button */}
                       <button
                         onClick={handleSaveAvatar}
-                        className="w-full rounded-lg border-2 border-[#2f254b] bg-[#e8dcff] p-3 text-sm font-semibold uppercase tracking-wide text-[#2f254b] shadow-md transition-all hover:bg-[#d6c9ff]"
+                        className="w-full rounded-lg border-2 border-[#3b3528] bg-[#e6ddc8] p-3 text-sm font-semibold uppercase tracking-wide text-[#3b3528] shadow-md transition-all hover:bg-[#d9cfb8]"
                         type="button"
                       >
                         Save Avatar
@@ -787,8 +787,8 @@ function App() {
                   <button
                     className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
                       activeTab === 'home'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#3b3528] bg-[#e6ddc8] text-[#3b3528]'
+                        : 'border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c]'
                     }`}
                     onClick={() => setActiveTab('home')}
                     type="button"
@@ -802,8 +802,8 @@ function App() {
                   <button
                     className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
                       activeTab === 'goals'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#3b3528] bg-[#e6ddc8] text-[#3b3528]'
+                        : 'border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c]'
                     }`}
                     onClick={() => setActiveTab('goals')}
                     type="button"
@@ -817,8 +817,8 @@ function App() {
                   <button
                     className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
                       activeTab === 'stats'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#3b3528] bg-[#e6ddc8] text-[#3b3528]'
+                        : 'border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c]'
                     }`}
                     onClick={() => setActiveTab('stats')}
                     type="button"
@@ -832,8 +832,8 @@ function App() {
                   <button
                     className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
                       activeTab === 'profile'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#3b3528] bg-[#e6ddc8] text-[#3b3528]'
+                        : 'border-[#6f6a5c] bg-[#fbf8ef] text-[#6f6a5c]'
                     }`}
                     onClick={() => setActiveTab('profile')}
                     type="button"
