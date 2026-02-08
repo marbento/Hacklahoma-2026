@@ -2,10 +2,10 @@ import { useState } from 'react'
 // Import your SVG assets here
 import body1Svg from './assets/body1.svg'
 import body2Svg from './assets/body2.svg'
-import hair1Svg from './assets/hair1.svg'
-import hair2Svg from './assets/hair2.svg'
 import clothing1Svg from './assets/cloth1.svg'
 import clothing2Svg from './assets/cloth2.svg'
+import hair1Svg from './assets/hair1.svg'
+import hair2Svg from './assets/hair2.svg'
 
 function App() {
   const [activeTab, setActiveTab] = useState('home')
@@ -359,105 +359,6 @@ function App() {
                         <p>{summaryCopy.line2}</p>
                       </div>
                     </details>
-
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                      <details className="group rounded-2xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                        <summary className="flex cursor-pointer list-none items-start justify-between">
-                          <div>
-                            <p className="text-xs uppercase tracking-[0.2em] text-[#8a83a3]">
-                              {balanceScore > 0 ? 'Time Invested' : 'Time Lost'}
-                            </p>
-                            <p className="mt-2 font-bold" style={{ fontSize: '32px' }}>
-                              {formatMinutes(balanceScore > 0 ? investedMinutes : lostMinutes)}
-                            </p>
-                            <p className="mt-1 text-xs text-[#6b6286]">
-                              {balanceScore > 0 ? 'Up 22% from last week' : 'Down 15% from last week'}
-                            </p>
-                          </div>
-                          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#f2ecff] text-[#6b6286]">
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className="stroke-current transition-transform duration-300 group-open:rotate-180"
-                            >
-                              <path d="M6 9L12 15L18 9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </div>
-                        </summary>
-                        <div className="mt-4 space-y-4">
-                          <div>
-                            <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-[#8a83a3]">
-                              <span>Time Invested</span>
-                              <span>{formatMinutes(investedMinutes)}</span>
-                            </div>
-                            <div className="mt-3 h-2 w-full rounded-full bg-[#efe8ff]">
-                              <div
-                                className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
-                                style={{ width: `${investedPct}%` }}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-[#8a83a3]">
-                              <span>Time Lost</span>
-                              <span>{formatMinutes(lostMinutes)}</span>
-                            </div>
-                            <div className="mt-3 h-2 w-full rounded-full bg-[#ffe7ef]">
-                              <div
-                                className="h-2 rounded-full bg-gradient-to-r from-rose-400 to-amber-400"
-                                style={{ width: `${lostPct}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </details>
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                        <p className="text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Phone Places</p>
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-emerald-700">Focus Apps +3</span>
-                          <span className="rounded-full bg-rose-400/15 px-2.5 py-1 text-rose-700">Doom Scroll -4</span>
-                        </div>
-                        <p className="mt-2 text-xs text-[#6b6286]">Good mix, but risky</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-6">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Recent Activities</h3>
-                        <button className="rounded-lg border-2 border-[#3b7d6a] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#3b7d6a] transition-all hover:bg-[#e8fff5]">See all</button>
-                      </div>
-                      <div className="mt-3 space-y-3">
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-semibold">Deep Focus</p>
-                              <p className="text-xs text-[#6b6286]">2h in Canvas</p>
-                            </div>
-                            <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-xs text-emerald-700">+4</span>
-                          </div>
-                        </div>
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-semibold">Late Scroll</p>
-                              <p className="text-xs text-[#6b6286]">1h 05m short-video loop</p>
-                            </div>
-                            <span className="rounded-full bg-amber-400/20 px-2 py-1 text-xs text-amber-700">-2</span>
-                          </div>
-                        </div>
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-semibold">Auto-play Spiral</p>
-                              <p className="text-xs text-[#6b6286]">Late night streaming</p>
-                            </div>
-                            <span className="rounded-full bg-rose-400/20 px-2 py-1 text-xs text-rose-700">-3</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </>
                 )}
 
