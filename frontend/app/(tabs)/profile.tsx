@@ -1,189 +1,179 @@
 // frontend/app/(tabs)/profile.tsx
-import { useState, useCallback } from "react";
+// Profile — Avatar creator + name input + settings
+import { useCallback, useState } from "react";
 import {
-  Alert, ActivityIndicator, Linking, SafeAreaView, ScrollView, StyleSheet,
-  Text, TextInput, TouchableOpacity, View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { AVATAR_PARTS } from "../../assets/avatarData";
+import { AvatarRenderer } from "../../components/AvatarRenderer";
 import { useAuth } from "../../context/AuthContext";
-import { useServices } from "../../hooks/useServices";
-import { syncCanvas } from "../../api/assignments";
+import { useAvatar } from "../../hooks/useAvatar";
+import { C } from "../../theme";
+
+type PartKey = "body" | "hair" | "clothes";
 
 export default function ProfileScreen() {
   const { userName, logout } = useAuth();
-  const { services, connectCanvas, removeCanvas } = useServices();
+  const { avatar, updatePart, save } = useAvatar();
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(avatar.name || userName || "");
+  const [activeTab, setActiveTab] = useState<PartKey>("body");
 
-  // Canvas token flow
-  const [showTokenInput, setShowTokenInput] = useState(false);
-  const [canvasToken, setCanvasToken] = useState("");
-  const [validating, setValidating] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-
-  const handleConnectCanvas = useCallback(async () => {
-    if (!canvasToken.trim()) return;
-    setValidating(true);
-    try {
-      const result = await connectCanvas(canvasToken.trim());
-      Alert.alert(
-        "Canvas Connected! 📚",
-        `Signed in as ${result.canvas_name}\n${result.courses_count} courses found.`
-      );
-      setShowTokenInput(false);
-      setCanvasToken("");
-
-      // Auto-sync
-      setSyncing(true);
-      try {
-        const s = await syncCanvas();
-        Alert.alert("Synced!", `Pulled ${s.synced} assignments.`);
-      } catch {}
-      setSyncing(false);
-    } catch (e: any) {
-      Alert.alert("Invalid Token", e.message || "Check that you copied the full token.");
-    } finally {
-      setValidating(false);
+  const handleSaveName = useCallback(async () => {
+    if (nameInput.trim()) {
+      await save({ ...avatar, name: nameInput.trim() });
     }
-  }, [canvasToken, connectCanvas]);
+    setEditingName(false);
+  }, [nameInput, avatar, save]);
 
-  const handleSyncCanvas = useCallback(async () => {
-    setSyncing(true);
-    try {
-      const res = await syncCanvas();
-      Alert.alert("Synced! 📚", `Pulled ${res.synced} assignments from Canvas.`);
-    } catch (e: any) {
-      Alert.alert("Sync Failed", e.message);
-    } finally {
-      setSyncing(false);
-    }
-  }, []);
+  const displayName = avatar.name || userName || "Trail Hiker";
 
-  const handleDisconnect = useCallback(() => {
-    Alert.alert("Disconnect Canvas?", "You'll lose access to assignment sync.", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Disconnect", style: "destructive", onPress: () => removeCanvas() },
-    ]);
-  }, [removeCanvas]);
+  const tabs: { key: PartKey; label: string; emoji: string }[] = [
+    { key: "body", label: "Skin", emoji: "🧑" },
+    { key: "hair", label: "Hair", emoji: "💇" },
+    { key: "clothes", label: "Outfit", emoji: "👕" },
+  ];
+
+  const options =
+    activeTab === "body"
+      ? AVATAR_PARTS.bodies
+      : activeTab === "hair"
+        ? AVATAR_PARTS.hairs
+        : AVATAR_PARTS.clothes;
+
+  const currentId = avatar[activeTab];
 
   return (
     <SafeAreaView style={s.container}>
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-        <Text style={s.title}>Profile 🥾</Text>
-        <Text style={s.subtitle}>Hey {userName || "there"}!</Text>
+      <ScrollView contentContainerStyle={s.scroll}>
+        <Text style={s.header}>PROFILE</Text>
 
-        <Text style={s.sectionTitle}>Connected Services</Text>
-
-        {/* ═══ CANVAS ═══ */}
-        <View style={[s.card, services?.canvas?.connected && s.cardConnected]}>
-          <View style={s.cardHeader}>
-            <Text style={s.cardEmoji}>📚</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.cardName}>Canvas (OU)</Text>
-              <Text style={s.cardStatus}>
-                {services?.canvas?.connected
-                  ? `${services.canvas.user_name} · ${services.canvas.courses_count} courses`
-                  : "Not connected"}
-              </Text>
-            </View>
-            <View style={[s.dot, services?.canvas?.connected ? s.dotGreen : s.dotRed]} />
+        {/* ═══ AVATAR DISPLAY ═══ */}
+        <View style={s.avatarSection}>
+          <View style={s.avatarFrame}>
+            <AvatarRenderer config={avatar} size={160} />
           </View>
 
-          {services?.canvas?.connected ? (
-            <View style={s.cardActions}>
-              <TouchableOpacity style={s.actionBtn} onPress={handleSyncCanvas} disabled={syncing}>
-                {syncing
-                  ? <ActivityIndicator color="#7C6FF7" size="small" />
-                  : <Text style={s.actionBtnText}>🔄 Sync Assignments</Text>
-                }
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDisconnect}>
-                <Text style={s.disconnectText}>Disconnect</Text>
-              </TouchableOpacity>
-            </View>
-          ) : !showTokenInput ? (
-            <TouchableOpacity style={s.connectBtn} onPress={() => setShowTokenInput(true)}>
-              <Text style={s.connectBtnText}>Connect Canvas</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={s.tokenFlow}>
-              <Text style={s.tokenHint}>
-                1. Open canvas.ou.edu → Settings{"\n"}
-                2. Scroll to "Approved Integrations"{"\n"}
-                3. Click "+ New Access Token"{"\n"}
-                4. Name it "Trail", generate, and paste below
-              </Text>
-
-              <TouchableOpacity
-                style={s.openCanvasBtn}
-                onPress={() => Linking.openURL("https://canvas.ou.edu/profile/settings")}
-              >
-                <Text style={s.openCanvasBtnText}>Open Canvas Settings →</Text>
-              </TouchableOpacity>
-
+          {/* Name */}
+          {editingName ? (
+            <View style={s.nameEditRow}>
               <TextInput
-                style={s.tokenInput}
-                placeholder="Paste token here"
-                placeholderTextColor="#555"
-                value={canvasToken}
-                onChangeText={setCanvasToken}
-                autoCapitalize="none"
-                autoCorrect={false}
-                multiline
+                style={s.nameInput}
+                value={nameInput}
+                onChangeText={setNameInput}
+                placeholder="Your name"
+                placeholderTextColor={C.textLight}
+                autoFocus
+                onSubmitEditing={handleSaveName}
+                returnKeyType="done"
               />
-
-              <View style={s.tokenActions}>
-                <TouchableOpacity
-                  style={[s.validateBtn, (validating || !canvasToken.trim()) && s.disabled]}
-                  onPress={handleConnectCanvas}
-                  disabled={validating || !canvasToken.trim()}
-                >
-                  <Text style={s.validateBtnText}>{validating ? "Validating..." : "Connect"}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => { setShowTokenInput(false); setCanvasToken(""); }}>
-                  <Text style={s.cancelText}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity style={s.nameSaveBtn} onPress={handleSaveName}>
+                <Text style={s.nameSaveBtnText}>Save</Text>
+              </TouchableOpacity>
             </View>
+          ) : (
+            <TouchableOpacity
+              onPress={() => {
+                setNameInput(displayName);
+                setEditingName(true);
+              }}
+            >
+              <Text style={s.displayName}>{displayName}</Text>
+              <Text style={s.editHint}>tap to edit name</Text>
+            </TouchableOpacity>
           )}
         </View>
 
-        {/* ═══ GOOGLE CALENDAR ═══ */}
+        {/* ═══ AVATAR CUSTOMIZER ═══ */}
+        <Text style={s.sectionLabel}>CUSTOMIZE YOUR HIKER</Text>
         <View style={s.card}>
-          <View style={s.cardHeader}>
-            <Text style={s.cardEmoji}>📅</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.cardName}>Google Calendar</Text>
-              <Text style={s.cardStatus}>Not connected</Text>
-            </View>
-            <View style={[s.dot, s.dotRed]} />
+          {/* Category tabs */}
+          <View style={s.tabRow}>
+            {tabs.map((t) => (
+              <TouchableOpacity
+                key={t.key}
+                style={[s.tab, activeTab === t.key && s.tabActive]}
+                onPress={() => setActiveTab(t.key)}
+              >
+                <Text style={s.tabEmoji}>{t.emoji}</Text>
+                <Text
+                  style={[s.tabText, activeTab === t.key && s.tabTextActive]}
+                >
+                  {t.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          <TouchableOpacity style={s.comingSoonBtn} disabled>
-            <Text style={s.comingSoonText}>Coming Soon</Text>
-          </TouchableOpacity>
+
+          {/* Options */}
+          <View style={s.optionsRow}>
+            {options.map((opt) => {
+              const isSelected = currentId === opt.id;
+              const previewConfig = { ...avatar, [activeTab]: opt.id };
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[s.optionCard, isSelected && s.optionCardSelected]}
+                  onPress={() => updatePart(activeTab, opt.id)}
+                >
+                  <View style={s.optionPreview}>
+                    <AvatarRenderer config={previewConfig} size={80} />
+                  </View>
+                  <Text
+                    style={[s.optionLabel, isSelected && s.optionLabelSelected]}
+                  >
+                    {opt.label}
+                  </Text>
+                  {isSelected && <Text style={s.checkmark}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
-        {/* ═══ ALWAYS ON ═══ */}
-        <View style={[s.card, s.cardConnected]}>
-          <View style={s.cardHeader}>
-            <Text style={s.cardEmoji}>🤖</Text>
-            <View style={{ flex: 1 }}><Text style={s.cardName}>Gemini AI</Text><Text style={s.cardStatus}>Active — study plans & insights</Text></View>
-            <View style={[s.dot, s.dotGreen]} />
-          </View>
+        {/* ═══ QUICK ACTIONS ═══ */}
+        <Text style={s.sectionLabel}>SETTINGS</Text>
+        <TouchableOpacity style={s.menuItem}>
+          <Text style={s.menuIcon}>⚙️</Text>
+          <Text style={s.menuText}>Manage connections</Text>
+          <Text style={s.menuArrow}>→</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.menuItem}>
+          <Text style={s.menuIcon}>📊</Text>
+          <Text style={s.menuText}>View all stats</Text>
+          <Text style={s.menuArrow}>→</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.menuItem}>
+          <Text style={s.menuIcon}>🔔</Text>
+          <Text style={s.menuText}>Notifications</Text>
+          <Text style={s.menuArrow}>→</Text>
+        </TouchableOpacity>
+
+        {/* About */}
+        <View style={s.aboutCard}>
+          <Text style={s.aboutText}>Trail v1.0.0</Text>
+          <Text style={s.aboutHint}>
+            Gentle nudges to keep you on your path.
+          </Text>
+          <Text style={s.aboutHint}>Built for Hacklahoma 2026 🏕️</Text>
         </View>
 
-        <View style={[s.card, s.cardConnected]}>
-          <View style={s.cardHeader}>
-            <Text style={s.cardEmoji}>🎙️</Text>
-            <View style={{ flex: 1 }}><Text style={s.cardName}>ElevenLabs Voice</Text><Text style={s.cardStatus}>Active — daily briefings</Text></View>
-            <View style={[s.dot, s.dotGreen]} />
-          </View>
-        </View>
-
-        {/* ═══ LOGOUT ═══ */}
-        <TouchableOpacity style={s.logoutBtn} onPress={() => {
-          Alert.alert("Log Out?", "", [
-            { text: "Cancel", style: "cancel" },
-            { text: "Log Out", style: "destructive", onPress: logout },
-          ]);
-        }}>
+        <TouchableOpacity
+          style={s.logoutBtn}
+          onPress={() => {
+            Alert.alert("Log Out?", "", [
+              { text: "Cancel", style: "cancel" },
+              { text: "Log Out", style: "destructive", onPress: logout },
+            ]);
+          }}
+        >
           <Text style={s.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
@@ -194,42 +184,158 @@ export default function ProfileScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" }, scroll: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 32, fontWeight: "bold", color: "#fff", marginTop: 10 },
-  subtitle: { fontSize: 16, color: "#888", marginBottom: 8 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#ccc", marginTop: 24, marginBottom: 10 },
+  container: { flex: 1, backgroundColor: C.beige },
+  scroll: { padding: 20, paddingBottom: 40 },
+  header: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: C.textMid,
+    letterSpacing: 4,
+    marginTop: 10,
+    marginBottom: 20,
+  },
 
-  card: { backgroundColor: "#1a1a1a", borderRadius: 14, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: "#2a2a2a" },
-  cardConnected: { borderColor: "#1b3a1b" },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
-  cardEmoji: { fontSize: 28 },
-  cardName: { color: "#fff", fontSize: 15, fontWeight: "600" },
-  cardStatus: { color: "#888", fontSize: 12, marginTop: 2 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  dotGreen: { backgroundColor: "#4CAF50" }, dotRed: { backgroundColor: "#E53935" },
+  // Avatar display
+  avatarSection: { alignItems: "center", marginBottom: 24 },
+  avatarFrame: {
+    width: 176,
+    height: 176,
+    borderRadius: 88,
+    backgroundColor: C.cardBg,
+    borderWidth: 3,
+    borderColor: C.kelp,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  displayName: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: C.kelp,
+    marginTop: 14,
+    textAlign: "center",
+  },
+  editHint: {
+    fontSize: 12,
+    color: C.textLight,
+    textAlign: "center",
+    marginTop: 2,
+  },
+  nameEditRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 12,
+  },
+  nameInput: {
+    flex: 1,
+    backgroundColor: C.inputBg,
+    borderRadius: 10,
+    padding: 12,
+    color: C.textDark,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+    minWidth: 200,
+  },
+  nameSaveBtn: {
+    backgroundColor: C.kelp,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  nameSaveBtnText: { color: C.textOnKelp, fontWeight: "700", fontSize: 14 },
 
-  cardActions: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#333" },
-  actionBtn: { backgroundColor: "#2a2a4a", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
-  actionBtnText: { color: "#7C6FF7", fontSize: 13, fontWeight: "600" },
-  disconnectText: { color: "#E53935", fontSize: 13 },
+  // Customizer
+  sectionLabel: {
+    fontSize: 13,
+    color: C.textLight,
+    letterSpacing: 3,
+    fontWeight: "600",
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  card: {
+    backgroundColor: C.cardBg,
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: C.cream,
+    marginBottom: 20,
+  },
 
-  connectBtn: { backgroundColor: "#7C6FF7", paddingVertical: 14, borderRadius: 10, alignItems: "center", marginTop: 14 },
-  connectBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
-  comingSoonBtn: { backgroundColor: "#222", paddingVertical: 12, borderRadius: 10, alignItems: "center", marginTop: 14 },
-  comingSoonText: { color: "#666", fontSize: 14 },
+  tabRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: C.parchment,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: C.cream,
+  },
+  tabActive: { backgroundColor: C.kelp, borderColor: C.kelp },
+  tabEmoji: { fontSize: 18, marginBottom: 2 },
+  tabText: { fontSize: 12, fontWeight: "600", color: C.textMid },
+  tabTextActive: { color: C.textOnKelp },
 
-  // Token flow
-  tokenFlow: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: "#333" },
-  tokenHint: { color: "#aaa", fontSize: 13, lineHeight: 22 },
-  openCanvasBtn: { backgroundColor: "#2a2a4a", paddingVertical: 12, borderRadius: 10, alignItems: "center", marginVertical: 12 },
-  openCanvasBtnText: { color: "#7C6FF7", fontSize: 14, fontWeight: "600" },
-  tokenInput: { backgroundColor: "#111", borderRadius: 10, padding: 14, color: "#fff", fontSize: 13, borderWidth: 1, borderColor: "#333", minHeight: 50, fontFamily: "monospace" },
-  tokenActions: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: 12 },
-  validateBtn: { flex: 1, backgroundColor: "#7C6FF7", paddingVertical: 14, borderRadius: 10, alignItems: "center" },
-  validateBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
-  disabled: { opacity: 0.4 },
-  cancelText: { color: "#666", fontSize: 14 },
+  optionsRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
+  optionCard: {
+    width: "47%",
+    backgroundColor: C.parchment,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: C.cream,
+  },
+  optionCardSelected: { borderColor: C.kelp, backgroundColor: C.kelp + "10" },
+  optionPreview: { width: 80, height: 80, overflow: "hidden", marginBottom: 8 },
+  optionLabel: { fontSize: 14, fontWeight: "600", color: C.textMid },
+  optionLabelSelected: { color: C.kelp },
+  checkmark: {
+    position: "absolute",
+    top: 8,
+    right: 10,
+    fontSize: 16,
+    color: C.kelp,
+    fontWeight: "bold",
+  },
 
-  logoutBtn: { borderWidth: 1, borderColor: "#E53935", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 32 },
-  logoutText: { color: "#E53935", fontSize: 16, fontWeight: "600" },
+  // Menu
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: C.cardBg,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: C.cream,
+  },
+  menuIcon: { fontSize: 20 },
+  menuText: { color: C.textDark, fontSize: 15, flex: 1 },
+  menuArrow: { color: C.textLight, fontSize: 16 },
+
+  aboutCard: {
+    backgroundColor: C.cardBg,
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: C.cream,
+    marginTop: 20,
+  },
+  aboutText: { color: C.textDark, fontSize: 15, fontWeight: "600" },
+  aboutHint: { color: C.textLight, fontSize: 13, marginTop: 4 },
+
+  logoutBtn: {
+    borderWidth: 1,
+    borderColor: C.danger,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 24,
+  },
+  logoutText: { color: C.danger, fontSize: 16, fontWeight: "600" },
 });
