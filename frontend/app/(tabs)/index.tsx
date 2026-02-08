@@ -21,6 +21,7 @@ import {
   useNudge,
 } from "../../hooks/useDashboard";
 import { useGoals } from "../../hooks/useGoals";
+import { getBankedSteps } from "../../api/insights";
 import { C } from "../../theme";
 
 let DeviceActivity: any;
@@ -141,36 +142,34 @@ export default function HomeScreen() {
     }, [reload]),
   );
 
-  // Calculate banked steps from screen time + completed goals
-  const calculateBankedSteps = useCallback(() => {
-    const timeSummary = getTimeSummary();
-    const netTimeMinutes = timeSummary.productiveMin - timeSummary.unproductiveMin;
-
-    // Calculate completed goals TODAY
-    const completedGoals = goals.filter(
-      (g) => g.is_active && g.today_progress >= g.target_value
-    ).length;
-
-    // Algorithm: bankedSteps = (netTimeHours) + (completedGoals * 3)
-    // Net time: 1 step per hour of productive time
-    // Completed goals: 3 steps per task
-    const netTimeHours = netTimeMinutes / 60;
-    const stepsFromTime = Math.max(0, Math.floor(netTimeHours));
-    const stepsFromGoals = completedGoals * 3;
-
-    const totalSteps = stepsFromTime + stepsFromGoals;
-
-    setBankedSteps(totalSteps);
+  // Fetch banked steps from API (uses time tracking service)
+  const fetchBankedSteps = useCallback(async () => {
+    try {
+      const data = await getBankedSteps();
+      setBankedSteps(data.banked_steps);
+    } catch (e) {
+      console.error("Failed to fetch banked steps:", e);
+      // Fallback: calculate locally if API fails
+      const timeSummary = getTimeSummary();
+      const netTimeMinutes = timeSummary.productiveMin - timeSummary.unproductiveMin;
+      const completedGoals = goals.filter(
+        (g) => g.is_active && g.today_progress >= g.target_value
+      ).length;
+      const netTimeHours = netTimeMinutes / 60;
+      const stepsFromTime = Math.max(0, Math.floor(netTimeHours));
+      const stepsFromGoals = completedGoals * 3;
+      setBankedSteps(stepsFromTime + stepsFromGoals);
+    }
   }, [goals]);
 
   useEffect(() => {
-    calculateBankedSteps();
-  }, [calculateBankedSteps]);
+    fetchBankedSteps();
+  }, [fetchBankedSteps]);
 
   useFocusEffect(
     useCallback(() => {
-      calculateBankedSteps();
-    }, [calculateBankedSteps]),
+      fetchBankedSteps();
+    }, [fetchBankedSteps]),
   );
 
   const prioritizedGoals = useMemo(

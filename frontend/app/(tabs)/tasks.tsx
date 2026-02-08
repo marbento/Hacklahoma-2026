@@ -1,5 +1,5 @@
 // frontend/app/(tabs)/tasks.tsx
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import {
   Alert,
   Linking,
@@ -15,6 +15,8 @@ import {
 import { useAssignments } from "../../hooks/useAssignments";
 import { useDashboard, useEncouragement } from "../../hooks/useDashboard";
 import { useGoals } from "../../hooks/useGoals";
+import { getCompletedToday, type CompletedGoal } from "../../api/goals";
+import { getBankedSteps } from "../../api/insights";
 import { C } from "../../theme";
 
 // ── Time tracking helpers ───────────────────────────────────
@@ -70,91 +72,24 @@ const CATEGORIES = [
   { key: "nutrition", emoji: "🥗", label: "Nutrition" },
 ];
 
-// Completed task interface
-interface CompletedTask {
-  id: string;
-  title: string;
-  category: string;
-  points: number;
-  completedAt: Date;
-}
-
-// Sample completed tasks data
-const SAMPLE_COMPLETED_TASKS: CompletedTask[] = [
-  {
-    id: "1",
-    title: "Submit studio reflection",
-    category: "academic",
-    points: 3,
-    completedAt: new Date(),
-  },
-  {
-    id: "2",
-    title: "Design review scheduled",
-    category: "professional",
-    points: 2,
-    completedAt: new Date(),
-  },
-  {
-    id: "3",
-    title: "Outline v2 delivered",
-    category: "professional",
-    points: 4,
-    completedAt: new Date(),
-  },
-  {
-    id: "4",
-    title: "Prototype handoff sent",
-    category: "professional",
-    points: 3,
-    completedAt: new Date(),
-  },
-  {
-    id: "5",
-    title: "Research notes tagged",
-    category: "academic",
-    points: 2,
-    completedAt: new Date(),
-  },
-  {
-    id: "6",
-    title: "Morning meditation",
-    category: "personal",
-    points: 1,
-    completedAt: new Date(),
-  },
-  {
-    id: "7",
-    title: "Gym workout",
-    category: "fitness",
-    points: 2,
-    completedAt: new Date(),
-  },
-  {
-    id: "8",
-    title: "Journal entry",
-    category: "personal",
-    points: 1,
-    completedAt: new Date(),
-  },
-];
-
 // Group tasks by category
-const groupTasksByCategory = (tasks: CompletedTask[]) => {
-  const groups: Record<string, CompletedTask[]> = {
+const groupTasksByCategory = (tasks: CompletedGoal[]) => {
+  const groups: Record<string, CompletedGoal[]> = {
     other: [],
     academic: [],
     career: [],
     fitness: [],
     wellness: [],
     creative: [],
+    sleep: [],
+    nutrition: [],
   };
 
   tasks.forEach((task) => {
     if (groups[task.category]) {
       groups[task.category].push(task);
     } else {
-      groups.other.push(task); // Default to other (personal)
+      groups.other.push(task); // Default to other
     }
   });
 
@@ -205,10 +140,28 @@ export default function TasksScreen() {
   const timeSummary = useMemo(() => getTimeSummary(), [refreshing]);
   const netResult = timeSummary.productiveMin - timeSummary.unproductiveMin;
 
-  // Completed tasks
-  const completedTasks = SAMPLE_COMPLETED_TASKS;
-  const groupedTasks = groupTasksByCategory(completedTasks);
-  const totalSteps = completedTasks.reduce((sum, task) => sum + task.points, 0);
+  // Completed tasks from API
+  const [completedTasks, setCompletedTasks] = useState<CompletedGoal[]>([]);
+  const [totalSteps, setTotalSteps] = useState(0);
+  const [loadingCompleted, setLoadingCompleted] = useState(true);
+  const groupedTasks = useMemo(() => groupTasksByCategory(completedTasks), [completedTasks]);
+
+  const fetchCompletedTasks = useCallback(async () => {
+    try {
+      const data = await getCompletedToday();
+      setCompletedTasks(data.goals);
+      setTotalSteps(data.total_steps);
+    } catch (e) {
+      console.error("Failed to fetch completed tasks:", e);
+    } finally {
+      setLoadingCompleted(false);
+    }
+  }, []);
+
+  // Fetch completed goals on mount
+  useEffect(() => {
+    fetchCompletedTasks();
+  }, [fetchCompletedTasks]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -218,10 +171,11 @@ export default function TasksScreen() {
         refreshGoals(),
         refreshAssignments(),
         fetchEncouragement(),
+        fetchCompletedTasks(),
       ]);
     } catch {}
     setRefreshing(false);
-  }, [refreshDash, refreshGoals, refreshAssignments, fetchEncouragement]);
+  }, [refreshDash, refreshGoals, refreshAssignments, fetchEncouragement, fetchCompletedTasks]);
 
   const handleSync = useCallback(async () => {
     try {
@@ -366,51 +320,55 @@ export default function TasksScreen() {
             </View>
 
             {/* Task feed by category */}
-            {["other", "academic", "career", "fitness", "wellness", "creative"].map((category) => {
-              const tasks = groupedTasks[category];
-              if (!tasks || tasks.length === 0) return null;
+            {loadingCompleted ? (
+              <Text style={s.empty}>Loading...</Text>
+            ) : (
+              ["other", "academic", "career", "fitness", "wellness", "creative", "sleep", "nutrition"].map((category) => {
+                const tasks = groupedTasks[category];
+                if (!tasks || tasks.length === 0) return null;
 
-              const categoryLabel =
-                category.charAt(0).toUpperCase() + category.slice(1);
-              const categoryEmoji =
-                CATEGORIES.find((c) => c.key === category)?.emoji || "🌟";
+                const categoryLabel =
+                  category.charAt(0).toUpperCase() + category.slice(1);
+                const categoryEmoji =
+                  CATEGORIES.find((c) => c.key === category)?.emoji || "🌟";
 
-              return (
-                <View key={category} style={s.categorySection}>
-                  <View style={s.categoryHeader}>
-                    <Text style={s.categoryTitle}>
-                      {categoryEmoji} {categoryLabel}
-                    </Text>
-                    <View style={s.categoryStats}>
-                      <Text style={s.categoryCount}>{tasks.length} tasks</Text>
-                      <Text style={s.categoryPoints}>
-                        +{tasks.reduce((sum, t) => sum + t.points, 0)} 🏆
+                return (
+                  <View key={category} style={s.categorySection}>
+                    <View style={s.categoryHeader}>
+                      <Text style={s.categoryTitle}>
+                        {categoryEmoji} {categoryLabel}
                       </Text>
-                    </View>
-                  </View>
-
-                  {tasks.map((task) => (
-                    <View key={task.id} style={s.completedTask}>
-                      <View style={s.taskCheckbox}>
-                        <Text style={s.checkmark}>✓</Text>
-                      </View>
-                      <View style={s.taskContent}>
-                        <Text style={s.taskTitle}>{task.title}</Text>
-                        <Text style={s.taskTime}>
-                          {task.completedAt.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                      <View style={s.categoryStats}>
+                        <Text style={s.categoryCount}>{tasks.length} tasks</Text>
+                        <Text style={s.categoryPoints}>
+                          +{tasks.reduce((sum, t) => sum + t.points, 0)} 🏆
                         </Text>
                       </View>
-                      <View style={s.taskPoints}>
-                        <Text style={s.pointsText}>+{task.points} 🏆</Text>
-                      </View>
                     </View>
-                  ))}
-                </View>
-              );
-            })}
+
+                    {tasks.map((task) => (
+                      <View key={task.id} style={s.completedTask}>
+                        <View style={s.taskCheckbox}>
+                          <Text style={s.checkmark}>✓</Text>
+                        </View>
+                        <View style={s.taskContent}>
+                          <Text style={s.taskTitle}>{task.title}</Text>
+                          <Text style={s.taskTime}>
+                            {new Date(task.completed_at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </Text>
+                        </View>
+                        <View style={s.taskPoints}>
+                          <Text style={s.pointsText}>+{task.points} 🏆</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })
+            )}
 
             {/* Empty state */}
             {completedTasks.length === 0 && (

@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime, timedelta
 from config.database import get_db
 from services.auth_service import get_current_user
 from services.gemini_service import generate_encouragement, generate_nudge_message
 from services.elevenlabs_service import text_to_speech_base64
+from services.time_tracking_service import get_banked_steps, calculate_daily_steps, analyze_daily_usage
 from schemas.progress import NudgeData
 
 router = APIRouter(prefix="/insights", tags=["insights"])
@@ -115,3 +116,44 @@ async def get_daily_briefing_audio(user: dict = Depends(get_current_user)):
     script = f"Good morning {dashboard['user_name']}. Here's your Trail briefing. {goals_text} {assignments_text} {encouragement} Have a great day."
     audio_b64 = await text_to_speech_base64(script)
     return {"audio_base64": audio_b64, "script": script}
+
+
+@router.get("/banked-steps")
+async def get_today_banked_steps(user: dict = Depends(get_current_user)):
+    """Get steps banked today (not yet invested in trail)."""
+    db = get_db()
+    return await get_banked_steps(user["_id"], db)
+
+
+@router.get("/daily-steps/{date}")
+async def get_steps_for_date(date: str, user: dict = Depends(get_current_user)):
+    """
+    Get steps earned for a specific date.
+
+    Args:
+        date: ISO date string (YYYY-MM-DD)
+    """
+    db = get_db()
+    try:
+        target_date = datetime.fromisoformat(date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+    return await calculate_daily_steps(user["_id"], target_date, db)
+
+
+@router.get("/screen-time-analysis/{date}")
+async def get_screen_time_analysis(date: str, user: dict = Depends(get_current_user)):
+    """
+    Get detailed screen time analysis for a specific date.
+
+    Args:
+        date: ISO date string (YYYY-MM-DD)
+    """
+    db = get_db()
+    try:
+        target_date = datetime.fromisoformat(date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+    return await analyze_daily_usage(user["_id"], target_date, db)

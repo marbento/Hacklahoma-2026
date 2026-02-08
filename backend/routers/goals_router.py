@@ -175,6 +175,13 @@ async def log_goal_progress(log: GoalLogCreate, user: dict = Depends(get_current
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
 
+    # Prevent manual logging of sleep goals (must come from HealthKit)
+    if goal.get("metric") == "sleep_duration" and log.source == "manual":
+        raise HTTPException(
+            status_code=400,
+            detail="Sleep goals cannot be manually logged. They must be synced from HealthKit."
+        )
+
     log_id = str(uuid.uuid4())
     await db.goal_logs.insert_one({
         "_id": log_id,
@@ -312,3 +319,113 @@ async def bulk_sync_progress(sync: GoalBulkSync, user: dict = Depends(get_curren
         })
 
     return {"synced": len(results), "results": results}
+
+
+@router.get("/history/{goal_id}")
+async def get_goal_history(goal_id: str, days: int = 7, user: dict = Depends(get_current_user)):
+    """
+    Get historical completion data for a goal.
+
+    Args:
+        goal_id: Goal ID
+        days: Number of days to look back (default 7)
+    """
+    db = get_db()
+    goal = await db.goals.find_one({"_id": goal_id, "user_id": user["_id"]})
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+
+    # Get logs for the past N days
+    lookback_date = datetime.utcnow() - timedelta(days=days)
+    logs = await db.goal_logs.find({
+        "goal_id": goal_id,
+        "date": {"$gte": lookback_date},
+    }).sort("date", 1).to_list(1000)
+
+    # Group by date
+    daily_data = {}
+    for log in logs:
+        date_key = log["date"].strftime("%Y-%m-%d")
+        if date_key not in daily_data:
+            daily_data[date_key] = {
+                "date": date_key,
+                "value": 0,
+                "logs_count": 0,
+                "completed": False
+            }
+        daily_data[date_key]["value"] += log.get("value", 0)
+        daily_data[date_key]["logs_count"] += 1
+
+    # Check completion status
+    target = goal.get("target_value", 1)
+    for data in daily_data.values():
+        data["completed"] = data["value"] >= target
+
+    # Convert to list and sort
+    history = sorted(daily_data.values(), key=lambda x: x["date"])
+
+    return {
+        "goal_id": goal_id,
+        "title": goal["title"],
+        "target_value": target,
+        "target_unit": goal.get("target_unit", "times"),
+        "days": days,
+        "history": history
+    }
+
+
+@router.get("/completed-today")
+async def get_completed_goals_today(user: dict = Depends(get_current_user)):
+    """
+    Get all goals completed today with their completion details.
+    Used for the 'Completed Tasks' feed.
+    """
+    db = get_db()
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Get all active goals
+    goals = await db.goals.find({
+        "user_id": user["_id"],
+        "is_active": True
+    }).to_list(100)
+
+    completed_today = []
+
+    for goal in goals:
+        goal_id = str(goal["_id"])
+
+        # Get today's logs for this goal
+        logs = await db.goal_logs.find({
+            "goal_id": goal_id,
+            "date": {"$gte": today_start}
+        }).sort("date", -1).to_list(100)
+
+        # Sum progress
+        progress = sum(log.get("value", 0) for log in logs)
+        target = goal.get("target_value", 1)
+
+        # If completed, add to list
+        if progress >= target:
+            # Get the timestamp of completion (last log that pushed over target)
+            completed_at = logs[-1]["date"] if logs else today_start
+
+            completed_today.append({
+                "id": goal_id,
+                "title": goal["title"],
+                "category": goal.get("category", "other"),
+                "points": 3,  # Each completed goal = 3 steps
+                "completed_at": completed_at.isoformat(),
+                "progress": progress,
+                "target": target,
+                "unit": goal.get("target_unit", "times")
+            })
+
+    # Sort by completion time (most recent first)
+    completed_today.sort(key=lambda x: x["completed_at"], reverse=True)
+
+    return {
+        "date": today_start.strftime("%Y-%m-%d"),
+        "completed_count": len(completed_today),
+        "total_steps": len(completed_today) * 3,
+        "goals": completed_today
+    }

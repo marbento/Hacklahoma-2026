@@ -110,3 +110,43 @@ export const syncGoalProgress = (
     source?: string;
   }>,
 ) => api.post<SyncResult>("/goals/sync", { logs });
+
+// ── History ──────────────────────────────────────────────────────
+
+export interface GoalHistory {
+  goal_id: string;
+  title: string;
+  target_value: number;
+  target_unit: string;
+  days: number;
+  history: Array<{
+    date: string;
+    value: number;
+    logs_count: number;
+    completed: boolean;
+  }>;
+}
+
+export interface CompletedGoal {
+  id: string;
+  title: string;
+  category: string;
+  points: number;
+  completed_at: string;
+  progress: number;
+  target: number;
+  unit: string;
+}
+
+export interface CompletedToday {
+  date: string;
+  completed_count: number;
+  total_steps: number;
+  goals: CompletedGoal[];
+}
+
+export const getGoalHistory = (goalId: string, days: number = 7) =>
+  api.get<GoalHistory>(`/goals/history/${goalId}?days=${days}`);
+
+export const getCompletedToday = () =>
+  api.get<CompletedToday>("/goals/completed-today");
