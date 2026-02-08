@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hacklahoma2026",
+      "infoPlist": {
+        "NSFamilyControlsUsageDescription": "We need access to screen time data to help you manage your device usage"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,14 +23,31 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.yourname.hacklahoma2026"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+      ],
+      [
+        "react-native-device-activity",
+        {
+          "appleTeamId": "YOUR_TEAM_ID_HERE",
+          "appGroup": "group.com.hacklahoma2026"
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -38,7 +59,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "./plugins/withScreenTime"
     ],
     "experiments": {
       "typedRoutes": true,

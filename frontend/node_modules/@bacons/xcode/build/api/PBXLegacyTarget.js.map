@@ -1,0 +1,1 @@
+{"version":3,"file":"PBXLegacyTarget.js","sourceRoot":"","sources":["../../src/api/PBXLegacyTarget.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,oDAAsC;AACtC,qDAAkD;AAMlD,MAAa,eAAgB,SAAQ,+BAEpC;IAEC,MAAM,CAAC,EAAE,CAAC,MAAW;QACnB,OAAO,MAAM,CAAC,GAAG,KAAK,eAAe,CAAC,GAAG,CAAC;IAC5C,CAAC;;AANH,0CAOC;AAJQ,mBAAG,GAAG,IAAI,CAAC,GAAG,CAAC,eAAwB,CAAC"}

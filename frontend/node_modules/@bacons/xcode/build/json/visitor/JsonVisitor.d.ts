@@ -1,0 +1,18 @@
+import { BaseVisitor } from "../parser/parser";
+import { XcodeProject } from "../types";
+/** Converts a CST for `pbxproj` into a JSON representation. */
+export declare class JsonVisitor extends BaseVisitor {
+    context: Partial<XcodeProject>;
+    constructor();
+    head(ctx: any): void;
+    object(ctx: any): any;
+    array(ctx: any): any;
+    objectItem(ctx: any): {
+        [x: number]: any;
+    };
+    /** Visit an identifier and ensure the result is always a string (used for object keys) */
+    visitIdentifierAsString(identifierCtx: any): any;
+    identifier(ctx: any): any;
+    value(ctx: any): any;
+}
+//# sourceMappingURL=JsonVisitor.d.ts.map
