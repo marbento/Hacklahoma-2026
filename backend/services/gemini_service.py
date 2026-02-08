@@ -14,8 +14,15 @@ def _get_model():
         raise ValueError("GEMINI_API_KEY environment variable is not set")
     print(f"✅ Gemini API key found (length: {len(settings.gemini_api_key)})")
     genai.configure(api_key=settings.gemini_api_key)
-    print("✅ Using Gemini model: gemini-pro")
-    return genai.GenerativeModel("gemini-pro")
+
+    # Try primary model first, fallback to preview if it fails
+    try:
+        print("✅ Using Gemini model: gemini-2.5-flash")
+        return genai.GenerativeModel("gemini-2.5-flash")
+    except Exception as e:
+        print(f"⚠️ Primary model failed, trying fallback: {e}")
+        print("✅ Using Gemini model: gemini-3-flash-preview")
+        return genai.GenerativeModel("gemini-3-flash-preview")
 
 
 async def generate_study_plan(
@@ -60,6 +67,7 @@ Respond in this exact JSON format (no markdown, no backticks):
 
 Be specific with resources. Keep subtasks actionable and bite-sized (15-30 min each)."""
 
+    text = None
     try:
         print("📡 Calling Gemini API...")
         response = model.generate_content(prompt)
@@ -67,7 +75,25 @@ Be specific with resources. Keep subtasks actionable and bite-sized (15-30 min e
 
         text = response.text.strip()
         print(f"📝 Response length: {len(text)} characters")
+    except Exception as api_error:
+        # If API call fails with 404 or "not found", try fallback model
+        error_str = str(api_error).lower()
+        if "404" in error_str or "not found" in error_str:
+            print(f"⚠️ Primary model API call failed: {api_error}")
+            print("🔄 Retrying with fallback model (gemini-3-flash-preview)...")
+            try:
+                genai.configure(api_key=settings.gemini_api_key)
+                fallback_model = genai.GenerativeModel("gemini-3-flash-preview")
+                response = fallback_model.generate_content(prompt)
+                text = response.text.strip()
+                print(f"✅ Fallback model succeeded! Response length: {len(text)} characters")
+            except Exception as fallback_error:
+                print(f"❌ Fallback model also failed: {fallback_error}")
+                raise api_error
+        else:
+            raise
 
+    try:
         if text.startswith("```"):
             text = text.split("\n", 1)[1]
         if text.endswith("```"):
@@ -133,8 +159,20 @@ Their progress today:
 Write a brief (2-3 sentences), genuine encouragement message. Reference their specific progress.
 Be warm but not cheesy. Sound like a supportive friend, not a corporate chatbot."""
 
-    response = model.generate_content(prompt)
-    return response.text.strip()
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as api_error:
+        # Try fallback model if primary fails
+        error_str = str(api_error).lower()
+        if "404" in error_str or "not found" in error_str:
+            print(f"⚠️ Primary model failed, trying fallback...")
+            genai.configure(api_key=settings.gemini_api_key)
+            fallback_model = genai.GenerativeModel("gemini-3-flash-preview")
+            response = fallback_model.generate_content(prompt)
+            return response.text.strip()
+        else:
+            raise
 
 
 async def generate_nudge_message(
@@ -161,8 +199,21 @@ Write a JSON response with:
 
 Be warm, not preachy."""
 
-    response = model.generate_content(prompt)
-    text = response.text.strip()
+    try:
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+    except Exception as api_error:
+        # Try fallback model if primary fails
+        error_str = str(api_error).lower()
+        if "404" in error_str or "not found" in error_str:
+            print(f"⚠️ Primary model failed, trying fallback...")
+            genai.configure(api_key=settings.gemini_api_key)
+            fallback_model = genai.GenerativeModel("gemini-3-flash-preview")
+            response = fallback_model.generate_content(prompt)
+            text = response.text.strip()
+        else:
+            raise
+
     if text.startswith("```"):
         text = text.split("\n", 1)[1]
     if text.endswith("```"):

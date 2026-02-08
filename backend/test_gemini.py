@@ -116,5 +116,5 @@ if __name__ == "__main__":
         print("   1. Make sure GEMINI_API_KEY is set in your environment")
         print("   2. Verify the API key is valid (starts with 'AIza')")
         print("   3. Check that you have API quota remaining")
-        print("   4. Ensure you're using model 'gemini-pro'")
+        print("   4. Ensure you're using model 'gemini-2.5-flash' (fallback: gemini-3-flash-preview)")
         sys.exit(1)

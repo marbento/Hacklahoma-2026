@@ -2,10 +2,11 @@
 
 ## ✅ What's Already Fixed
 
-1. **Model Name**: ✅ Using `gemini-pro` (correct!)
+1. **Model Name**: ✅ Using `gemini-2.5-flash` (with fallback to `gemini-3-flash-preview`)
 2. **Error Handling**: ✅ Comprehensive try-catch blocks added
 3. **Logging**: ✅ Detailed console output for debugging
 4. **Fallback Plans**: ✅ Returns default plan if API fails
+5. **Model Fallback**: ✅ Automatically retries with `gemini-3-flash-preview` if primary fails
 
 ## 🚀 Quick Test
 
@@ -77,7 +78,7 @@ python3 test_gemini.py
 After deploying, check the logs for:
 ```
 ✅ Gemini API key found (length: 39)
-✅ Using Gemini model: gemini-pro
+✅ Using Gemini model: gemini-2.5-flash
 ```
 
 If you see:
@@ -131,7 +132,7 @@ Then go back to step A and make sure you added the variable.
 ```
 
 **Fix:**
-✅ Already fixed! Using `gemini-pro`
+✅ Already fixed! Using `gemini-2.5-flash`
 
 ### Issue 4: JSON Parsing Error
 **Error:**
@@ -205,7 +206,7 @@ Look for these messages in your Render logs:
 ```
 🎓 Generating study plan for: Test Assignment
 ✅ Gemini API key found (length: 39)
-✅ Using Gemini model: gemini-pro
+✅ Using Gemini model: gemini-2.5-flash
 📡 Calling Gemini API...
 ✅ Gemini API responded!
 📝 Response length: 847 characters
@@ -218,7 +219,7 @@ Look for these messages in your Render logs:
 - [ ] API key added to Render environment variables
 - [ ] Service redeployed on Render
 - [ ] Logs show "Gemini API key found"
-- [ ] Logs show "Using Gemini model: gemini-pro"
+- [ ] Logs show "Using Gemini model: gemini-2.5-flash"
 - [ ] Test script runs successfully locally
 - [ ] Study plan endpoint returns valid response
 - [ ] Encouragement endpoint returns messages

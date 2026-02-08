@@ -30,7 +30,12 @@ def _get_gemini_model():
     if not settings.gemini_api_key:
         raise ValueError("GEMINI_API_KEY not configured")
     genai.configure(api_key=settings.gemini_api_key)
-    return genai.GenerativeModel("gemini-pro")
+
+    # Try primary model first, fallback to preview if it fails
+    try:
+        return genai.GenerativeModel("gemini-2.5-flash")
+    except Exception:
+        return genai.GenerativeModel("gemini-3-flash-preview")
 
 
 async def classify_app_usage(app_name: str, duration_minutes: int, context: Optional[str] = None) -> Dict:
@@ -86,10 +91,24 @@ async def classify_app_usage(app_name: str, duration_minutes: int, context: Opti
         }}
         """
 
-        response = model.generate_content(prompt)
+        try:
+            response = model.generate_content(prompt)
+            text = response.text.strip()
+        except Exception as api_error:
+            # Try fallback model if primary fails
+            error_str = str(api_error).lower()
+            if "404" in error_str or "not found" in error_str:
+                print(f"⚠️ Primary model failed, trying fallback...")
+                genai.configure(api_key=settings.gemini_api_key)
+                fallback_model = genai.GenerativeModel("gemini-3-flash-preview")
+                response = fallback_model.generate_content(prompt)
+                text = response.text.strip()
+            else:
+                raise
+
         # Parse JSON from response
         import json
-        result = json.loads(response.text.strip().replace("```json", "").replace("```", ""))
+        result = json.loads(text.replace("```json", "").replace("```", ""))
         return result
 
     except Exception as e:
