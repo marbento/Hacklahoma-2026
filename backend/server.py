@@ -1,9 +1,21 @@
+import json
+import os
 from datetime import datetime
 from typing import List, Optional
 
+import google.generativeai as genai
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+# Load environment variables
+load_dotenv()
+
+# Configure Gemini API
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 app = FastAPI()
 
@@ -100,10 +112,90 @@ def normalize_app_name(app_name: str) -> str:
     return app_name.lower().strip()
 
 
+def classify_app_with_gemini(app_name: str) -> Optional[dict]:
+    """
+    Use Gemini AI to classify an app and determine if it's wasteful.
+    Returns None if Gemini is unavailable or fails.
+    """
+    if not GEMINI_API_KEY:
+        return None
+
+    try:
+        # Initialize the model
+        model = genai.GenerativeModel("gemini-pro")
+
+        # Create a prompt for Gemini
+        prompt = f"""Analyze the following mobile/desktop application and classify it based on productivity and time-wasting potential.
+
+App Name: {app_name}
+
+Please provide a JSON response with the following structure:
+{{
+    "category": "one of: social_media, entertainment, productivity, education, gaming, communication, utility, unknown",
+    "is_productive": true or false,
+    "waste_score": a float between 0.0 (very productive) and 1.0 (very wasteful)
+}}
+
+Guidelines:
+- Social media apps (Instagram, Facebook, TikTok, Twitter, etc.) should have waste_score 0.7-0.95
+- Entertainment apps (YouTube, Netflix, games) should have waste_score 0.4-0.9 depending on context
+- Productivity apps (email, calendar, notes, task managers) should have waste_score 0.1-0.3
+- Education apps should have waste_score 0.2-0.3
+- Communication apps (Slack, Teams) can be productive but may have moderate waste_score 0.3-0.4
+- Gaming apps should have waste_score 0.8-0.95
+
+Return ONLY valid JSON, no additional text."""
+
+        # Generate response
+        response = model.generate_content(prompt)
+
+        # Parse the response
+        response_text = response.text.strip()
+
+        # Clean up the response (remove markdown code blocks if present)
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        response_text = response_text.strip()
+
+        # Parse JSON
+        classification = json.loads(response_text)
+
+        # Validate and normalize the response
+        category = classification.get("category", "unknown")
+        is_productive = bool(classification.get("is_productive", False))
+        waste_score = float(classification.get("waste_score", 0.5))
+
+        # Clamp waste_score to valid range
+        waste_score = max(0.0, min(1.0, waste_score))
+
+        return {
+            "category": category,
+            "is_productive": is_productive,
+            "waste_score": waste_score,
+        }
+    except Exception as e:
+        # Log error but don't raise - fallback to database
+        print(f"Gemini classification failed for '{app_name}': {str(e)}")
+        return None
+
+
 def get_app_classification(app_name: str) -> dict:
-    """Get classification for an app, with fallback for unknown apps"""
+    """
+    Get classification for an app.
+    First tries Gemini AI, then falls back to database lookup, then default.
+    """
     normalized = normalize_app_name(app_name)
 
+    # Try Gemini AI classification first
+    gemini_result = classify_app_with_gemini(app_name)
+    if gemini_result:
+        return gemini_result
+
+    # Fallback to database lookup
     # Direct match
     if normalized in APP_CLASSIFICATIONS:
         return APP_CLASSIFICATIONS[normalized]
@@ -127,7 +219,7 @@ def get_time_factor(time_str: str) -> float:
             # Try parsing ISO format
             dt = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
             hour = dt.hour
-    except:
+    except (ValueError, AttributeError, KeyError):
         hour = 12  # Default to noon
 
     # Work hours (9 AM - 5 PM) = higher waste factor
