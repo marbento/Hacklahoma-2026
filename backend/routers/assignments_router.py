@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from datetime import datetime
+from bson import ObjectId
 from config.database import get_db
 from schemas.assignment import AssignmentResponse, AssignmentUpdate
 from services.auth_service import get_current_user
@@ -38,7 +39,12 @@ async def sync_from_canvas(user: dict = Depends(get_current_user)):
 @router.post("/{assignment_id}/study-plan")
 async def create_study_plan(assignment_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
-    assignment = await db.assignments.find_one({"_id": assignment_id, "user_id": user["_id"]})
+    try:
+        obj_id = ObjectId(assignment_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid assignment ID format")
+
+    assignment = await db.assignments.find_one({"_id": obj_id, "user_id": user["_id"]})
     if not assignment:
         raise HTTPException(status_code=404, detail="Assignment not found")
 
@@ -57,8 +63,13 @@ async def create_study_plan(assignment_id: str, user: dict = Depends(get_current
 @router.put("/{assignment_id}")
 async def update_assignment(assignment_id: str, update: AssignmentUpdate, user: dict = Depends(get_current_user)):
     db = get_db()
+    try:
+        obj_id = ObjectId(assignment_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid assignment ID format")
+
     result = await db.assignments.update_one(
-        {"_id": assignment_id, "user_id": user["_id"]},
+        {"_id": obj_id, "user_id": user["_id"]},
         {"$set": {**update.model_dump(exclude_none=True), "updated_at": datetime.utcnow()}},
     )
     if result.matched_count == 0:
@@ -69,8 +80,13 @@ async def update_assignment(assignment_id: str, update: AssignmentUpdate, user: 
 @router.post("/{assignment_id}/log-time")
 async def log_study_time(assignment_id: str, minutes: int, user: dict = Depends(get_current_user)):
     db = get_db()
+    try:
+        obj_id = ObjectId(assignment_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid assignment ID format")
+
     result = await db.assignments.update_one(
-        {"_id": assignment_id, "user_id": user["_id"]},
+        {"_id": obj_id, "user_id": user["_id"]},
         {"$inc": {"time_spent_minutes": minutes}, "$set": {"status": "in_progress", "updated_at": datetime.utcnow()}},
     )
     if result.matched_count == 0:
