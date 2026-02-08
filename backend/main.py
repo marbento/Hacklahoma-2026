@@ -9,6 +9,7 @@ from routers.goals_router import router as goals_router
 from routers.assignments_router import router as assignments_router
 from routers.insights_router import router as insights_router
 from routers.services_router import router as services_router
+from routers.dev_router import router as dev_router
 
 
 @asynccontextmanager
@@ -41,6 +42,7 @@ app.include_router(goals_router)
 app.include_router(assignments_router)
 app.include_router(insights_router)
 app.include_router(services_router)
+app.include_router(dev_router)
 
 
 @app.get("/")
