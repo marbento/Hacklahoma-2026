@@ -51,6 +51,7 @@ export function useGoals() {
         "exercise_minutes",
         "stand_hours",
         "steps",
+        "sleep_duration",
       ]);
 
       const summary = await healthKit.queryActivitySummary();
@@ -112,6 +113,17 @@ export function useGoals() {
           target: 8000,
           unit: "steps",
           category: "fitness",
+        });
+      }
+
+      // Add sleep goal (8 hours default)
+      if (!existingMetrics.has("sleep_duration")) {
+        ringGoals.push({
+          metric: "sleep_duration",
+          title: "Sleep 8 hours",
+          target: 8,
+          unit: "hrs",
+          category: "sleep",
         });
       }
 

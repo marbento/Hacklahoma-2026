@@ -136,6 +136,21 @@ export default function ProfileScreen() {
               );
             })}
           </View>
+
+          {/* Save Button */}
+          <TouchableOpacity
+            style={s.saveAvatarBtn}
+            onPress={() => {
+              save(avatar);
+              Alert.alert(
+                "Avatar Saved! ✓",
+                "Your hiker is ready to hit the trail.",
+                [{ text: "OK" }],
+              );
+            }}
+          >
+            <Text style={s.saveAvatarBtnText}>💾 Save Avatar</Text>
+          </TouchableOpacity>
         </View>
 
         {/* ═══ QUICK ACTIONS ═══ */}
@@ -300,6 +315,23 @@ const s = StyleSheet.create({
     fontSize: 16,
     color: C.kelp,
     fontWeight: "bold",
+  },
+  saveAvatarBtn: {
+    backgroundColor: C.kelp,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  saveAvatarBtnText: {
+    color: C.textOnKelp,
+    fontSize: 16,
+    fontWeight: "700",
   },
 
   // Menu

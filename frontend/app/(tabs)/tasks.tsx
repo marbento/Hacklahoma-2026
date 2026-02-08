@@ -58,14 +58,16 @@ function formatTime(mins: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-// ── Categories for goals ────────────────────────────────────
+// ── Categories for goals (must match backend GoalCategory enum) ────────
 const CATEGORIES = [
-  { key: "personal", emoji: "🌟", label: "Personal" },
+  { key: "other", emoji: "🌟", label: "Personal" },
   { key: "academic", emoji: "📚", label: "Academic" },
-  { key: "professional", emoji: "💼", label: "Professional" },
+  { key: "career", emoji: "💼", label: "Career" },
   { key: "fitness", emoji: "🏃", label: "Fitness" },
   { key: "wellness", emoji: "🧘", label: "Wellness" },
   { key: "creative", emoji: "🎨", label: "Creative" },
+  { key: "sleep", emoji: "😴", label: "Sleep" },
+  { key: "nutrition", emoji: "🥗", label: "Nutrition" },
 ];
 
 // Completed task interface
@@ -140,16 +142,19 @@ const SAMPLE_COMPLETED_TASKS: CompletedTask[] = [
 // Group tasks by category
 const groupTasksByCategory = (tasks: CompletedTask[]) => {
   const groups: Record<string, CompletedTask[]> = {
-    personal: [],
+    other: [],
     academic: [],
-    professional: [],
+    career: [],
+    fitness: [],
+    wellness: [],
+    creative: [],
   };
 
   tasks.forEach((task) => {
     if (groups[task.category]) {
       groups[task.category].push(task);
     } else {
-      groups.personal.push(task); // Default to personal
+      groups.other.push(task); // Default to other (personal)
     }
   });
 
@@ -192,7 +197,7 @@ export default function TasksScreen() {
   // Goal creation
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newCategory, setNewCategory] = useState("personal");
+  const [newCategory, setNewCategory] = useState("other");
   const [newTarget, setNewTarget] = useState("1");
   const [newUnit, setNewUnit] = useState("times");
 
@@ -230,13 +235,19 @@ export default function TasksScreen() {
   const handlePlan = useCallback(
     async (id: string) => {
       try {
+        console.log("[Study Plan] Generating for assignment:", id);
         const plan = await makePlan(id);
+        console.log("[Study Plan] Success:", plan);
         Alert.alert(
           "Study Plan Ready! 📚",
           `~${plan.estimated_total_minutes} min · ${plan.subtasks.length} steps\n\n${plan.encouragement}`,
         );
       } catch (e: any) {
-        Alert.alert("Error", e.message);
+        console.error("[Study Plan] Error:", e);
+        Alert.alert(
+          "Study Plan Error",
+          e.message || "Failed to generate study plan. Check console for details.",
+        );
       }
     },
     [makePlan],
@@ -355,7 +366,7 @@ export default function TasksScreen() {
             </View>
 
             {/* Task feed by category */}
-            {["personal", "academic", "professional"].map((category) => {
+            {["other", "academic", "career", "fitness", "wellness", "creative"].map((category) => {
               const tasks = groupedTasks[category];
               if (!tasks || tasks.length === 0) return null;
 
@@ -724,15 +735,28 @@ export default function TasksScreen() {
                 No assignments yet. Connect Canvas in Gear to sync.
               </Text>
             ) : (
-              assignments.slice(0, 15).map((a) => {
-                const daysLeft =
-                  a.days_until_due ??
-                  (a.due_at
-                    ? Math.ceil(
-                        (new Date(a.due_at).getTime() - Date.now()) / 86400000,
-                      )
-                    : null);
-                return (
+              assignments
+                .filter((a) => {
+                  // Only show assignments due within next 2 weeks (14 days)
+                  const daysLeft =
+                    a.days_until_due ??
+                    (a.due_at
+                      ? Math.ceil(
+                          (new Date(a.due_at).getTime() - Date.now()) / 86400000,
+                        )
+                      : null);
+                  return daysLeft != null && daysLeft <= 14;
+                })
+                .slice(0, 15)
+                .map((a) => {
+                  const daysLeft =
+                    a.days_until_due ??
+                    (a.due_at
+                      ? Math.ceil(
+                          (new Date(a.due_at).getTime() - Date.now()) / 86400000,
+                        )
+                      : null);
+                  return (
                   <View key={a.id} style={s.assignCard}>
                     <View style={s.assignHeader}>
                       <View style={{ flex: 1 }}>

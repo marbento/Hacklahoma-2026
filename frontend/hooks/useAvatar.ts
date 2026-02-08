@@ -10,16 +10,18 @@ export function useAvatar() {
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem(AVATAR_KEY).then((raw) => {
-      if (raw) {
-        try {
-          setAvatar({ ...DEFAULT_AVATAR, ...JSON.parse(raw) });
-        } catch {}
-      }
-      setLoaded(true);
-    });
+  const reload = useCallback(async () => {
+    const raw = await AsyncStorage.getItem(AVATAR_KEY);
+    if (raw) {
+      try {
+        setAvatar({ ...DEFAULT_AVATAR, ...JSON.parse(raw) });
+      } catch {}
+    }
   }, []);
+
+  useEffect(() => {
+    reload().then(() => setLoaded(true));
+  }, [reload]);
 
   const save = useCallback(async (config: AvatarConfig) => {
     setAvatar(config);
@@ -35,5 +37,5 @@ export function useAvatar() {
     [avatar],
   );
 
-  return { avatar, loaded, save, updatePart };
+  return { avatar, loaded, save, updatePart, reload };
 }

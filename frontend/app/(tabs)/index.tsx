@@ -1,5 +1,6 @@
 // frontend/app/(tabs)/index.tsx
 // HOME — Dashboard only. No auth gates. No Screen Time setup.
+import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   RefreshControl,
@@ -11,7 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import TrailCard from "../../components/TrailCard";
 import { useAssignments } from "../../hooks/useAssignments";
+import { useAvatar } from "../../hooks/useAvatar";
 import {
   useDashboard,
   useEncouragement,
@@ -120,11 +123,55 @@ function getDaysLeft(a: {
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const [currentTile, setCurrentTile] = useState(0);
+  const [bankedSteps, setBankedSteps] = useState(0);
+  const [isMoving, setIsMoving] = useState(false);
+  const [currentTrailIndex, setCurrentTrailIndex] = useState(0);
+  const { avatar, reload } = useAvatar();
   const { goals, refresh: refreshGoals } = useGoals();
   const { nudge, refresh: refreshNudge } = useNudge();
   const { dashboard, refresh: refreshDashboard } = useDashboard();
   const { text: encouragement, fetch: fetchEncouragement } = useEncouragement();
   const { assignments, refresh: refreshAssignments } = useAssignments();
+
+  // Reload avatar when returning from Profile tab
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
+
+  // Calculate banked steps from screen time + completed goals
+  const calculateBankedSteps = useCallback(() => {
+    const timeSummary = getTimeSummary();
+    const netTimeMinutes = timeSummary.productiveMin - timeSummary.unproductiveMin;
+
+    // Calculate completed goals
+    const completedGoals = goals.filter(
+      (g) => g.is_active && g.today_progress >= g.target_value
+    ).length;
+
+    // Algorithm: bankedSteps = (netTime / 5 minutes) + (completedGoals * 10)
+    // Net time: Every 5 minutes saved = 1 step
+    // Completed goals: Each goal = 10 steps
+    const stepsFromTime = Math.max(0, Math.floor(netTimeMinutes / 5));
+    const stepsFromGoals = completedGoals * 10;
+
+    const totalSteps = stepsFromTime + stepsFromGoals;
+
+    // Minimum 100 steps for testing/demo purposes
+    setBankedSteps(Math.max(100, totalSteps));
+  }, [goals]);
+
+  useEffect(() => {
+    calculateBankedSteps();
+  }, [calculateBankedSteps]);
+
+  useFocusEffect(
+    useCallback(() => {
+      calculateBankedSteps();
+    }, [calculateBankedSteps]),
+  );
 
   const prioritizedGoals = useMemo(
     () =>
@@ -167,6 +214,20 @@ export default function HomeScreen() {
   const timeSummary = useMemo(() => getTimeSummary(), [refreshing]);
   const netResult = timeSummary.productiveMin - timeSummary.unproductiveMin;
 
+  // Trail progress calculation
+  const nodesPerTrail = 14; // 0-13 = 14 nodes per trail
+  const numTrails = netResult < 0 ? 3 : 2; // detour + trail1 + trail2 OR trail1 + trail2
+  const totalNodes = nodesPerTrail * numTrails; // Total nodes including starting nodes
+  const totalStepsAvailable = totalNodes - numTrails; // Subtract starting nodes (don't count as steps)
+  const completedTrailSteps = currentTrailIndex * (nodesPerTrail - 1) + Math.max(0, currentTile);
+  const trailProgressPct = Math.round(
+    (completedTrailSteps / totalStepsAvailable) * 100,
+  );
+  // Button should ONLY lock when on final trail AND that trail is complete
+  const isOnFinalTrail = currentTrailIndex >= numTrails - 1;
+  const isFinalTrailComplete = currentTile >= nodesPerTrail - 1;
+  const isTrailComplete = isOnFinalTrail && isFinalTrailComplete;
+
   const totalSteps = dashboard ? dashboard.goals_total : goals.length;
   const completedSteps = dashboard
     ? dashboard.goals_completed
@@ -203,6 +264,36 @@ export default function HomeScreen() {
     setLocalGoal(goalInput.trim());
     setGoalInput("");
   }, [goalInput]);
+
+  const handleTakeStep = useCallback(() => {
+    if (bankedSteps <= 0) return;
+
+    setBankedSteps((prev) => Math.max(0, prev - 1));
+    setIsMoving(true);
+
+    setTimeout(() => {
+      setIsMoving(false);
+    }, 520);
+
+    // Handle trail progression
+    setCurrentTile((prevTile) => {
+      const maxTilePerTrail = 13; // Each trail has 14 nodes (0-13)
+
+      if (prevTile >= maxTilePerTrail) {
+        // At the end of current trail, move to next trail
+        setCurrentTrailIndex((prevTrailIndex) => {
+          const maxTrails = netResult < 0 ? 3 : 2; // detour + trail1 + trail2 OR trail1 + trail2
+          if (prevTrailIndex < maxTrails - 1) {
+            return prevTrailIndex + 1;
+          }
+          return prevTrailIndex; // Stay at final trail
+        });
+        return 0; // Start at first tile of new trail
+      } else {
+        return prevTile + 1;
+      }
+    });
+  }, [bankedSteps, netResult]);
 
   // ── ALWAYS render the dashboard. No auth gates. ──────────
   return (
@@ -345,9 +436,29 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* ═══ PROGRESS ═══ */}
+        {/* ═══ TRAIL VISUALIZATION ═══ */}
+        <TrailCard
+          currentTile={currentTile}
+          bankedSteps={bankedSteps}
+          onTakeStep={handleTakeStep}
+          hasDetour={netResult < 0}
+          isMoving={isMoving}
+          avatarConfig={avatar}
+          currentTrailIndex={currentTrailIndex}
+          isTrailComplete={isTrailComplete}
+        />
+
+        {/* ═══ TRAIL PROGRESS ═══ */}
         <View style={st.card}>
-          <Text style={st.cardLabel}>PROGRESS</Text>
+          <Text style={st.cardLabel}>TRAIL PROGRESS</Text>
+          <View style={{ marginBottom: 12 }}>
+            <Text style={st.dataText}>
+              Trail {currentTrailIndex + 1} of {numTrails}
+            </Text>
+            <Text style={st.dataMuted}>
+              Node {currentTile + 1}/{nodesPerTrail} on current trail
+            </Text>
+          </View>
           <View
             style={{
               flexDirection: "row",
@@ -356,7 +467,32 @@ export default function HomeScreen() {
             }}
           >
             <Text style={st.dataText}>
-              {completedSteps}/{totalSteps} steps
+              {completedTrailSteps}/{totalStepsAvailable} total steps
+            </Text>
+            <Text style={st.dataMuted}>{trailProgressPct}% complete</Text>
+          </View>
+          <View style={st.progressBar}>
+            <View
+              style={[
+                st.progressFill,
+                { width: `${trailProgressPct}%` as any },
+              ]}
+            />
+          </View>
+        </View>
+
+        {/* ═══ GOALS PROGRESS ═══ */}
+        <View style={st.card}>
+          <Text style={st.cardLabel}>DAILY GOALS</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 8,
+            }}
+          >
+            <Text style={st.dataText}>
+              {completedSteps}/{totalSteps} goals
             </Text>
             <Text style={st.dataMuted}>{progressPct}% completed</Text>
           </View>
