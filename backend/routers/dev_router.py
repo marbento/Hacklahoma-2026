@@ -12,7 +12,7 @@ settings = get_settings()
 
 @router.post("/seed-mock-user")
 async def seed_mock_user():
-    """Create Avery Park demo user with 3 days of history"""
+    """Create Avery Park demo user with 3 days of history AND completed tasks for TODAY"""
 
     # Only allow in development
     if settings.app_env == "production":
@@ -41,21 +41,53 @@ async def seed_mock_user():
     result = await db.users.insert_one(user_data)
     user_id = str(result.inserted_id)
 
-    # 2. Create goals
+    # 2. Create goals - SMALLER TARGETS so they show as COMPLETED today!
     goals_data = [
         {
             "user_id": user_id,
-            "title": "Study 3 hours daily",
+            "title": "Study session",
             "description": "Focus on coursework",
             "category": "academic",
             "frequency": "daily",
-            "target_value": 180.0,
+            "target_value": 60.0,  # 1 hour - achievable!
             "target_unit": "min",
             "metric": "manual",
             "auto_track": False,
             "is_active": True,
             "current_streak": 3,
             "longest_streak": 5,
+            "total_completions": 3,
+            "created_at": datetime(2026, 2, 5, 12, 0, 0),
+        },
+        {
+            "user_id": user_id,
+            "title": "Review Canvas",
+            "description": "Check assignments",
+            "category": "academic",
+            "frequency": "daily",
+            "target_value": 1.0,
+            "target_unit": "times",
+            "metric": "manual",
+            "auto_track": False,
+            "is_active": True,
+            "current_streak": 3,
+            "longest_streak": 8,
+            "total_completions": 3,
+            "created_at": datetime(2026, 2, 5, 12, 0, 0),
+        },
+        {
+            "user_id": user_id,
+            "title": "Plan tasks",
+            "description": "Organize tomorrow",
+            "category": "wellness",
+            "frequency": "daily",
+            "target_value": 1.0,
+            "target_unit": "times",
+            "metric": "manual",
+            "auto_track": False,
+            "is_active": True,
+            "current_streak": 3,
+            "longest_streak": 6,
             "total_completions": 3,
             "created_at": datetime(2026, 2, 5, 12, 0, 0),
         },
@@ -97,40 +129,29 @@ async def seed_mock_user():
     inserted_goals = await db.goals.insert_many(goals_data)
     goal_ids = [str(gid) for gid in inserted_goals.inserted_ids]
 
-    # 3. Create goal logs (track completions for each day)
-    # Feb 6: 1 task completed (study goal: 83 min < 180 min target, NOT completed)
-    # Feb 7: 1 task completed (study goal: 192 min > 180 min target, COMPLETED)
-    # Feb 8: 1 task completed (study goal: 96 min < 180 min target, NOT completed)
-    # BUT we track the progress regardless
-    goal_logs = [
-        # Feb 6 - Study session (didn't hit 180 min target)
-        {
-            "user_id": user_id,
-            "goal_id": goal_ids[0],
-            "value": 83.0,  # 42 + 41 min productive
-            "date": datetime(2026, 2, 6, 16, 0, 0),
-            "source": "manual",
-            "notes": "Notion + Calendar work",
-        },
-        # Feb 7 - Study session (HIT 180 min target!)
-        {
-            "user_id": user_id,
-            "goal_id": goal_ids[0],
-            "value": 192.0,  # 60 + 72 + 60 min productive
-            "date": datetime(2026, 2, 7, 18, 0, 0),
-            "source": "manual",
-            "notes": "Notion + Canvas + Microsoft 365",
-        },
-        # Feb 8 TODAY - Study session (didn't hit 180 min target)
-        {
-            "user_id": user_id,
-            "goal_id": goal_ids[0],
-            "value": 96.0,  # 35 + 25 + 36 min productive
-            "date": datetime(2026, 2, 8, 17, 0, 0),
-            "source": "manual",
-            "notes": "Notion + Calendar + Canvas",
-        },
-    ]
+    # 3. Create goal logs - THESE WILL SHOW AS COMPLETED!
+    goal_logs = []
+
+    # Feb 6 - 2 completed goals
+    goal_logs.extend([
+        {"user_id": user_id, "goal_id": goal_ids[0], "value": 65.0, "date": datetime(2026, 2, 6, 16, 0, 0), "source": "manual", "notes": "Study session"},
+        {"user_id": user_id, "goal_id": goal_ids[1], "value": 1.0, "date": datetime(2026, 2, 6, 10, 0, 0), "source": "manual", "notes": "Checked Canvas"},
+    ])
+
+    # Feb 7 - 3 completed goals
+    goal_logs.extend([
+        {"user_id": user_id, "goal_id": goal_ids[0], "value": 120.0, "date": datetime(2026, 2, 7, 18, 0, 0), "source": "manual", "notes": "Deep study time"},
+        {"user_id": user_id, "goal_id": goal_ids[1], "value": 1.0, "date": datetime(2026, 2, 7, 9, 30, 0), "source": "manual", "notes": "Canvas check"},
+        {"user_id": user_id, "goal_id": goal_ids[2], "value": 1.0, "date": datetime(2026, 2, 7, 21, 0, 0), "source": "manual", "notes": "Planned in Notion"},
+    ])
+
+    # Feb 8 TODAY - 4 COMPLETED GOALS! These will show in the completed feed!
+    goal_logs.extend([
+        {"user_id": user_id, "goal_id": goal_ids[0], "value": 96.0, "date": datetime(2026, 2, 8, 15, 5, 0), "source": "manual", "notes": "Study session completed"},
+        {"user_id": user_id, "goal_id": goal_ids[1], "value": 1.0, "date": datetime(2026, 2, 8, 15, 5, 0), "source": "manual", "notes": "Reviewed Canvas assignments"},
+        {"user_id": user_id, "goal_id": goal_ids[2], "value": 1.0, "date": datetime(2026, 2, 8, 9, 10, 0), "source": "manual", "notes": "Morning planning in Notion"},
+        {"user_id": user_id, "goal_id": goal_ids[3], "value": 35.0, "date": datetime(2026, 2, 8, 7, 0, 0), "source": "healthkit", "notes": "Morning workout"},
+    ])
 
     await db.goal_logs.delete_many({"user_id": user_id})
     await db.goal_logs.insert_many(goal_logs)
@@ -195,32 +216,35 @@ async def seed_mock_user():
     await db.screen_time.insert_many(screen_time_logs)
 
     # 5. Create trail progress
+    # Feb 6: 83 min productive = 1.38 hrs = 1 step + 2 goals × 3 = 6 steps → 7 total
+    # Feb 7: 192 min productive = 3.2 hrs = 3 steps + 3 goals × 3 = 9 steps → 12 total
+    # Feb 8: 96 min productive = 1.6 hrs = 1 step + 4 goals × 3 = 12 steps → 13 total TODAY
     trail_progress = {
         "user_id": user_id,
-        "current_tile": 10,
+        "current_tile": 19,  # 7 + 12 = 19 steps invested from past 2 days
         "current_trail_index": 0,
-        "total_steps_earned": 14,
-        "steps_invested": 10,
-        "steps_banked": 4,
+        "total_steps_earned": 32,  # 7 + 12 + 13
+        "steps_invested": 19,  # Past 2 days invested
+        "steps_banked": 13,  # TODAY's steps ready to invest!
         "history": [
             {
                 "date": datetime(2026, 2, 6, 0, 0, 0),
-                "steps_earned": 4,
+                "steps_earned": 7,  # 1 from time + 6 from goals (2 completed × 3)
                 "steps_invested": 0,
                 "productive_minutes": 83,
                 "unproductive_minutes": 36,
             },
             {
                 "date": datetime(2026, 2, 7, 0, 0, 0),
-                "steps_earned": 6,
-                "steps_invested": 4,
+                "steps_earned": 12,  # 3 from time + 9 from goals (3 completed × 3)
+                "steps_invested": 7,  # Invested previous day
                 "productive_minutes": 192,
                 "unproductive_minutes": 66,
             },
             {
                 "date": datetime(2026, 2, 8, 0, 0, 0),
-                "steps_earned": 4,
-                "steps_invested": 6,
+                "steps_earned": 13,  # 1 from time + 12 from goals (4 completed × 3)
+                "steps_invested": 12,  # Invested previous day
                 "productive_minutes": 96,
                 "unproductive_minutes": 30,
             },
@@ -271,7 +295,7 @@ async def seed_mock_user():
 
     return {
         "success": True,
-        "message": "Mock user created successfully",
+        "message": "Mock user created successfully with COMPLETED TASKS!",
         "user": {
             "id": user_id,
             "email": "avery.park@demo.com",
@@ -283,8 +307,9 @@ async def seed_mock_user():
             "goal_logs": len(goal_logs),
             "screen_time_logs": len(screen_time_logs),
             "assignments": len(assignments),
-            "total_steps_earned": 14,
-            "steps_invested": 10,
-            "steps_banked": 4,
+            "completed_today": 4,  # 🎉 4 COMPLETED GOALS TODAY!
+            "total_steps_earned": 32,
+            "steps_invested": 19,
+            "steps_banked": 13,  # 13 BANKED STEPS for today!
         },
     }
