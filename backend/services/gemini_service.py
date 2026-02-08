@@ -14,15 +14,22 @@ def _get_model():
         raise ValueError("GEMINI_API_KEY environment variable is not set")
     print(f"✅ Gemini API key found (length: {len(settings.gemini_api_key)})")
     genai.configure(api_key=settings.gemini_api_key)
-    print("✅ Using Gemini model: gemini-2.5-flash")
-    return genai.GenerativeModel("gemini-2.5-flash")
+    print("✅ Using Gemini model: gemini-pro")
+    return genai.GenerativeModel("gemini-pro")
 
 
 async def generate_study_plan(
     assignment_title: str, course_name: str, description: str = "",
     points_possible: float = None, due_at: datetime = None,
 ) -> StudyPlan:
-    model = _get_model()
+    print(f"\n🎓 Generating study plan for: {assignment_title}")
+
+    try:
+        model = _get_model()
+    except Exception as e:
+        print(f"❌ Failed to get Gemini model: {e}")
+        raise
+
     days_left = ""
     if due_at:
         delta = due_at - datetime.utcnow()
@@ -53,16 +60,40 @@ Respond in this exact JSON format (no markdown, no backticks):
 
 Be specific with resources. Keep subtasks actionable and bite-sized (15-30 min each)."""
 
-    response = model.generate_content(prompt)
-    text = response.text.strip()
-    if text.startswith("```"):
-        text = text.split("\n", 1)[1]
-    if text.endswith("```"):
-        text = text.rsplit("```", 1)[0]
-
     try:
+        print("📡 Calling Gemini API...")
+        response = model.generate_content(prompt)
+        print("✅ Gemini API responded!")
+
+        text = response.text.strip()
+        print(f"📝 Response length: {len(text)} characters")
+
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1]
+        if text.endswith("```"):
+            text = text.rsplit("```", 1)[0]
+
         data = json.loads(text.strip())
-    except json.JSONDecodeError:
+        print("✅ Successfully parsed JSON response")
+
+    except json.JSONDecodeError as e:
+        print(f"⚠️ JSON parsing failed: {e}")
+        print(f"   Raw response: {text[:200]}..." if 'text' in locals() else "   No response text available")
+        # Fallback to default plan
+        data = {
+            "estimated_total_minutes": 60,
+            "key_concepts": ["Review course materials"],
+            "subtasks": [
+                {"title": "Review requirements", "description": "Read the full assignment", "estimated_minutes": 10, "resources": []},
+                {"title": "Work through problems", "description": "Complete step by step", "estimated_minutes": 40, "resources": []},
+                {"title": "Review and submit", "description": "Check your work", "estimated_minutes": 10, "resources": []},
+            ],
+            "encouragement": f"You've got this! Take {assignment_title} one step at a time.",
+        }
+    except Exception as e:
+        print(f"❌ Gemini API call failed: {e}")
+        print(f"   Error type: {type(e).__name__}")
+        # Fallback to default plan
         data = {
             "estimated_total_minutes": 60,
             "key_concepts": ["Review course materials"],

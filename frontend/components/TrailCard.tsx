@@ -549,7 +549,7 @@ const st = StyleSheet.create({
   },
   totalStepsText: {
     fontSize: 13,
-    color: C.textLight,
+    color: C.textMid,  // Darker for better visibility
     fontWeight: "600",
     marginTop: 6,
     letterSpacing: 0.3,
@@ -701,8 +701,8 @@ const st = StyleSheet.create({
     elevation: 3,
   },
   stepsValue: {
-    fontSize: 14,
-    color: C.textDark,
+    fontSize: 16,
+    color: C.kelp,  // Use kelp green to make it stand out!
     fontWeight: "700",
   },
 });

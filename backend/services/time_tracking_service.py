@@ -30,7 +30,7 @@ def _get_gemini_model():
     if not settings.gemini_api_key:
         raise ValueError("GEMINI_API_KEY not configured")
     genai.configure(api_key=settings.gemini_api_key)
-    return genai.GenerativeModel("gemini-2.5-flash")
+    return genai.GenerativeModel("gemini-pro")
 
 
 async def classify_app_usage(app_name: str, duration_minutes: int, context: Optional[str] = None) -> Dict:
