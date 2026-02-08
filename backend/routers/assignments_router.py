@@ -55,7 +55,7 @@ async def create_study_plan(assignment_id: str, user: dict = Depends(get_current
     )
     plan.assignment_id = assignment_id
     await db.assignments.update_one(
-        {"_id": assignment_id}, {"$set": {"study_plan": plan.model_dump(), "updated_at": datetime.utcnow()}},
+        {"_id": obj_id}, {"$set": {"study_plan": plan.model_dump(), "updated_at": datetime.utcnow()}},
     )
     return plan
 
