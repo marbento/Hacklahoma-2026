@@ -16,6 +16,7 @@ import clothing2Svg from './assets/cloth2.svg'
 import detourImage from './assets/detour.png'
 import hair1Svg from './assets/hair1.svg'
 import hair2Svg from './assets/hair2.svg'
+import mockUser from './assets/mock-user.json'
 import trail1Image from './assets/trail1.png'
 import trail2Image from './assets/trail2.png'
 
@@ -66,8 +67,8 @@ function App() {
   }
 
   // Time tracking (productive vs. distracting time)
-  const investedMinutes = 220 // Time spent on productive apps
-  const lostMinutes = 221 // Time spent on distracting apps
+  const investedMinutes = Math.round(mockUser.today.productiveHours * 60)
+  const lostMinutes = Math.round(mockUser.today.negativeHours * 60)
   const totalMinutes = investedMinutes + lostMinutes
   const investedPct = Math.round((investedMinutes / totalMinutes) * 100)
   const lostPct = Math.round((lostMinutes / totalMinutes) * 100)
@@ -77,14 +78,15 @@ function App() {
 
   // Game progression state
   const [baseStepsNeeded] = useState(() => Math.floor(Math.random() * 11) + 30)
-  const tasksCompleted = 3 // Number of tasks finished today
-  const completedTasks = [
-    { title: 'Submit studio reflection', source: 'Canvas', steps: 3 },
-    { title: 'Design review scheduled', source: 'Google Calendar', steps: 2 },
-    { title: 'Outline v2 delivered', source: 'Notion', steps: 4 },
-    { title: 'Prototype handoff sent', source: 'Microsoft 365', steps: 3 },
-    { title: 'Research notes tagged', source: 'Notion', steps: 2 },
-  ]
+  const tasksCompleted = mockUser.today.tasksCompleted
+  const completedTasks = mockUser.today.behaviorLog
+    .filter((entry) => entry.type === 'productive')
+    .slice(0, tasksCompleted)
+    .map((entry, index) => ({
+      title: `${entry.app} focus block ${index + 1}`,
+      source: entry.app,
+      steps: mockUser.rules.stepsPerTask,
+    }))
   const completedTaskSteps = completedTasks.reduce((sum, task) => sum + task.steps, 0)
   const pushApps = [
     { name: 'Notion', detail: 'Tasks', badge: 'N', color: 'bg-[#e8e0d1] text-[#6f6a5c]', connected: true },
@@ -96,7 +98,7 @@ function App() {
     { name: 'YouTube', detail: 'Watch time', badge: 'Y', color: 'bg-[#f1d7c5] text-[#b07d5b]', connected: false },
     { name: 'Reddit', detail: 'Scroll loops', badge: 'R', color: 'bg-[#e8e0d1] text-[#6f6a5c]', connected: false },
   ]
-  const initialSteps = 30 // Test banked steps
+  const initialSteps = mockUser.trailProgress.stepsBanked
   const hasDetour = netMinutes < 0
   const detourNodes = [
     { x: 280, y: 350 },
@@ -171,12 +173,27 @@ function App() {
     { name: 'Trail 1', background: trail1Image, nodes: trailNodes },
     { name: 'Trail 2', background: trail2Image, nodes: trailNodesTwo },
   ]
-  const [currentTrail, setCurrentTrail] = useState(0)
+  const initialTrailPosition = (() => {
+    let remaining = Math.max(0, mockUser.trailProgress.stepsInvested)
+    let trailIndex = 0
+    while (trailIndex < trails.length) {
+      const trailSteps = trails[trailIndex].nodes.length
+      if (remaining < trailSteps) {
+        return { trailIndex, tileIndex: remaining }
+      }
+      remaining -= trailSteps
+      trailIndex += 1
+    }
+    const lastIndex = Math.max(0, trails.length - 1)
+    const lastTrailMax = trails[lastIndex].nodes.length - 1
+    return { trailIndex: lastIndex, tileIndex: lastTrailMax }
+  })()
+  const [currentTrail, setCurrentTrail] = useState(initialTrailPosition.trailIndex)
   const currentTrailData = trails[currentTrail]
   const currentNodes = currentTrailData.nodes
   const maxTile = currentNodes.length - 1
   const [bankedSteps, setBankedSteps] = useState(initialSteps)
-  const [currentTile, setCurrentTile] = useState(0)
+  const [currentTile, setCurrentTile] = useState(initialTrailPosition.tileIndex)
   const [isMoving, setIsMoving] = useState(false)
   const [showFinaleModal, setShowFinaleModal] = useState(false)
   const moveTimerRef = useRef(null)
@@ -185,7 +202,7 @@ function App() {
   const trailProgressPct = Math.round((currentTile / Math.max(1, maxTile)) * 100) // Progress percentage on the trail
   const lostSteps = Math.max(0, Math.round(lostMinutes / 30))
   const totalStepsNeeded = trails.reduce((sum, trail) => sum + trail.nodes.length, 0)
-  const [progressSteps, setProgressSteps] = useState(0)
+  const [progressSteps, setProgressSteps] = useState(mockUser.trailProgress.stepsInvested)
   const stepsInvested = progressSteps
   const dashboardProgressRaw = Math.round((stepsInvested / totalStepsNeeded) * 100)
   const dashboardProgressClamped = Math.max(0, Math.min(100, dashboardProgressRaw))

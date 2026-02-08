@@ -1,0 +1,107 @@
+{
+  "user": {
+    "id": "mock-001",
+    "name": "Avery Park"
+  },
+  "rules": {
+    "stepsPerPositiveHour": 1,
+    "stepsPerTask": 3
+  },
+  "history": [
+    {
+      "date": "2026-02-06",
+      "productiveHours": 1.4,
+      "negativeHours": 0.6,
+      "tasksCompleted": 1,
+      "stepsFromHours": 1,
+      "stepsFromTasks": 3,
+      "totalStepsEarned": 4,
+      "stepsInvested": 0,
+      "stepsBankedEndOfDay": 4,
+      "behaviorLog": [
+        { "time": "09:05", "type": "productive", "app": "Notion", "minutes": 42 },
+        { "time": "10:20", "type": "productive", "app": "Google Calendar", "minutes": 41 },
+        { "time": "14:10", "type": "negative", "app": "Instagram", "minutes": 18 },
+        { "time": "16:40", "type": "negative", "app": "YouTube", "minutes": 18 }
+      ]
+    },
+    {
+      "date": "2026-02-07",
+      "productiveHours": 3.2,
+      "negativeHours": 1.1,
+      "tasksCompleted": 1,
+      "stepsFromHours": 3,
+      "stepsFromTasks": 3,
+      "totalStepsEarned": 6,
+      "stepsInvested": 4,
+      "stepsBankedEndOfDay": 6,
+      "behaviorLog": [
+        { "time": "08:30", "type": "productive", "app": "Notion", "minutes": 60 },
+        { "time": "09:45", "type": "productive", "app": "Canvas", "minutes": 72 },
+        { "time": "13:15", "type": "productive", "app": "Microsoft 365", "minutes": 60 },
+        { "time": "15:00", "type": "negative", "app": "Reddit", "minutes": 28 },
+        { "time": "18:10", "type": "negative", "app": "YouTube", "minutes": 38 }
+      ]
+    },
+    {
+      "date": "2026-02-08",
+      "productiveHours": 1.6,
+      "negativeHours": 0.5,
+      "tasksCompleted": 1,
+      "stepsFromHours": 1,
+      "stepsFromTasks": 3,
+      "totalStepsEarned": 4,
+      "stepsInvested": 6,
+      "stepsBankedEndOfDay": 4,
+      "behaviorLog": [
+        { "time": "09:10", "type": "productive", "app": "Notion", "minutes": 35 },
+        { "time": "10:00", "type": "productive", "app": "Google Calendar", "minutes": 25 },
+        { "time": "13:30", "type": "negative", "app": "Instagram", "minutes": 12 },
+        { "time": "15:05", "type": "productive", "app": "Canvas", "minutes": 36 },
+        { "time": "17:40", "type": "negative", "app": "YouTube", "minutes": 18 }
+      ]
+    }
+  ],
+  "trailProgress": {
+    "totalStepsEarned": 14,
+    "stepsInvested": 10,
+    "stepsBanked": 4
+  },
+  "today": {
+    "date": "2026-02-08",
+    "productiveHours": 1.6,
+    "negativeHours": 0.5,
+    "tasksCompleted": 1,
+    "stepsFromHours": 1,
+    "stepsFromTasks": 3,
+    "totalStepsEarned": 4,
+    "stepsInvested": 6,
+    "stepsBanked": 4,
+    "behaviorLog": [
+      {
+        "time": "09:10",
+        "type": "productive",
+        "app": "Notion",
+        "minutes": 35
+      },
+      {
+        "time": "10:00",
+        "type": "productive",
+        "app": "Google Calendar",
+        "minutes": 25
+      },
+      {
+        "time": "13:30",
+        "type": "negative",
+        "app": "Instagram",
+        "minutes": 12
+      },
+      {
+        "time": "15:05",
+        "type": "productive",
+        "app": "Canvas",
+        "minutes": 36
+      }
+    ]
+  }
+}
