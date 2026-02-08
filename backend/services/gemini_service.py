@@ -12,7 +12,7 @@ def _get_model():
     if not settings.gemini_api_key:
         raise ValueError("GEMINI_API_KEY environment variable is not set")
     genai.configure(api_key=settings.gemini_api_key)
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-pro")
 
 
 async def generate_study_plan(
