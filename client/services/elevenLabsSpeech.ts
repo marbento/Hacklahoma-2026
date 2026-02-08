@@ -94,15 +94,18 @@ export type SpeakOptions = {
 
 /**
  * Speaks the given text using Eleven Labs TTS.
- * When useServerOnly is true, only uses the FastAPI /tts route.
- * Otherwise uses server when EXPO_PUBLIC_API_URL is set, else Eleven Labs directly.
+ * Prefers frontend (direct Eleven Labs API) when EXPO_PUBLIC_ELEVEN_LABS_API_KEY is set.
+ * Uses server /tts only when useServerOnly is true, or when no API key is set but EXPO_PUBLIC_API_URL is set.
  * options.voiceId: optional Eleven Labs voice ID (e.g. MALE_VOICE_ID for male voice).
  */
 export async function speakWithElevenLabs(
   text: string,
   options?: SpeakOptions
 ): Promise<void> {
-  const useServer = options?.useServerOnly ?? Boolean(getApiBaseUrl()?.trim());
+  const hasKey = Boolean(getApiKey()?.trim());
+  const hasServer = Boolean(getApiBaseUrl()?.trim());
+  const useServer =
+    options?.useServerOnly ?? (hasServer && !hasKey);
   const arrayBuffer = useServer
     ? await fetchAudioFromServer(text, options?.voiceId)
     : await fetchAudioFromElevenLabs(text, options?.voiceId);
@@ -142,7 +145,7 @@ export async function speakWithElevenLabs(
   });
 }
 
-/** True if TTS is available (server URL or Eleven Labs API key set). */
+/** True if TTS is available (Eleven Labs API key or server URL set). */
 export function isElevenLabsConfigured(): boolean {
-  return Boolean(getApiBaseUrl()?.trim() || getApiKey()?.trim());
+  return Boolean(getApiKey()?.trim() || getApiBaseUrl()?.trim());
 }
