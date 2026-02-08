@@ -1,4 +1,4 @@
-package com.yourname.hacklahoma2026
+package com.hacklahoma2026
 
 import android.app.Application
 import android.content.res.Configuration

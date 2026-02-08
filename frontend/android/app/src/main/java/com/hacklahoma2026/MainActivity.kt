@@ -1,4 +1,4 @@
-package com.yourname.hacklahoma2026
+package com.hacklahoma2026
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

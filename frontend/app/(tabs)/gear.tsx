@@ -15,6 +15,7 @@ import {
 import { syncCanvas } from "../../api/assignments";
 import { useAuth } from "../../context/AuthContext";
 import { useServices } from "../../hooks/useServices";
+import { healthKit } from "../../services/healthKitService";
 import { ScreenTimeService } from "../../services/screenTimeService";
 import { C } from "../../theme";
 
@@ -32,6 +33,13 @@ const GEAR_ITEMS = [
     name: "Shield",
     integration: "screentime",
     unlockText: "Enable Screen Time",
+  },
+  {
+    key: "fitness",
+    emoji: "💪",
+    name: "Fitness Pack",
+    integration: "fitness",
+    unlockText: "Connect Apple Health",
   },
   {
     key: "notion",
@@ -113,6 +121,7 @@ export default function GearScreen() {
   const { logout } = useAuth();
 
   const [authStatus, setAuthStatus] = useState<AuthStatus>("notDetermined");
+  const [fitnessConnected, setFitnessConnected] = useState(false);
   const [selection, setSelection] = useState<string | null>(null);
   const [isBlocking, setIsBlocking] = useState(false);
   const [timeLimit, setTimeLimit] = useState(30);
@@ -131,18 +140,33 @@ export default function GearScreen() {
       };
       setAuthStatus(m[ScreenTimeService.getAuthStatus()] ?? "notDetermined");
     } catch {}
+
+    // Check if HealthKit is already available (user previously authorized)
+    if (healthKit.isAvailable()) {
+      // Try a lightweight query — if it works, user has authorized before
+      healthKit
+        .queryMetric("steps")
+        .then((val) => {
+          // If we get here without throwing, HealthKit is authorized
+          setFitnessConnected(true);
+        })
+        .catch(() => {
+          // Not authorized yet
+        });
+    }
   }, []);
 
   const connectedMap = useMemo(
     () => ({
       screentime: authStatus === "approved",
+      fitness: fitnessConnected,
       canvas: services?.canvas?.connected || false,
       notion: false,
       gcal: false,
       instagram: false,
       microsoft: false,
     }),
-    [services, authStatus],
+    [services, authStatus, fitnessConnected],
   );
 
   const connectedCount = Object.values(connectedMap).filter(Boolean).length;
@@ -163,6 +187,33 @@ export default function GearScreen() {
         );
     } catch (e) {
       Alert.alert("Error", `Authorization failed: ${e}`);
+    }
+  }, []);
+
+  const handleFitnessConnect = useCallback(async () => {
+    if (!healthKit.isAvailable()) {
+      Alert.alert(
+        "Not Available",
+        "HealthKit is not available on this device.",
+      );
+      return;
+    }
+    try {
+      const ok = await healthKit.requestAuth([
+        "steps",
+        "active_calories",
+        "exercise_minutes",
+        "stand_hours",
+      ]);
+      if (ok) {
+        setFitnessConnected(true);
+        Alert.alert(
+          "Fitness Pack Unlocked! 💪",
+          "Apple Health connected. Your steps and activity rings will sync automatically.",
+        );
+      }
+    } catch (e) {
+      Alert.alert("Error", `HealthKit authorization failed: ${e}`);
     }
   }, []);
 
@@ -255,6 +306,7 @@ export default function GearScreen() {
             style: "destructive",
             onPress: () => {
               if (name === "Canvas") removeCanvas();
+              if (name === "Apple Health") setFitnessConnected(false);
             },
           },
         ],
@@ -265,7 +317,9 @@ export default function GearScreen() {
 
   const handleConnect = useCallback((key: string) => {
     if (key === "canvas") setShowTokenInput("canvas");
-    else
+    else if (key === "fitness") {
+      // Handled by handleFitnessConnect
+    } else
       Alert.alert(
         "Coming Soon",
         `${key.charAt(0).toUpperCase() + key.slice(1)} integration is coming soon!`,
@@ -303,6 +357,8 @@ export default function GearScreen() {
                 style={[s.gearCard, isUnlocked && s.gearCardUnlocked]}
                 onPress={() => {
                   if (gear.key === "screentime" && !isUnlocked) handleAuth();
+                  else if (gear.key === "fitness" && !isUnlocked)
+                    handleFitnessConnect();
                   else if (!isUnlocked) handleConnect(gear.integration);
                 }}
                 activeOpacity={isUnlocked ? 1 : 0.7}
@@ -433,6 +489,35 @@ export default function GearScreen() {
             </View>
           )}
         </View>
+
+        {/* ═══ FITNESS ═══ */}
+        {fitnessConnected && (
+          <>
+            <Text style={s.sectionLabel}>FITNESS</Text>
+            <View style={s.stCard}>
+              <View style={s.stHeader}>
+                <Text style={{ fontSize: 24 }}>💪</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.stTitle}>Apple Health</Text>
+                  <Text style={s.stStatus}>Syncing steps & activity rings</Text>
+                </View>
+                <View style={[s.dot, s.dotGreen]} />
+              </View>
+              <View style={{ marginTop: 14 }}>
+                <Text style={s.stHint}>
+                  Your steps, active calories, exercise minutes, and stand hours
+                  sync automatically to your goals on the Tasks tab.
+                </Text>
+                <TouchableOpacity
+                  style={[s.primaryBtn, s.activeBtn]}
+                  onPress={() => handleDisconnect("Apple Health")}
+                >
+                  <Text style={s.primaryBtnText}>Disconnect</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        )}
 
         {/* ═══ INTEGRATIONS ═══ */}
         <Text style={s.sectionLabel}>INTEGRATIONS</Text>

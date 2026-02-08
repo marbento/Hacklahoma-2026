@@ -17,7 +17,9 @@
       "supportsTablet": true,
       "appleTeamId": "2H65T54FRU",
       "infoPlist": {
-        "NSFamilyControlsUsageDescription": "Trail needs Screen Time access to help you stay focused and nudge you when you open distracting apps."
+        "NSFamilyControlsUsageDescription": "Trail needs Screen Time access to help you stay focused and nudge you when you open distracting apps.",
+        "NSHealthShareUsageDescription": "We need access to your Health data to track activity",
+        "NSHealthUpdateUsageDescription": "We need permission to write data to Health app"
       }
     },
     "android": {

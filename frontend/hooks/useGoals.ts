@@ -1,5 +1,6 @@
 // frontend/hooks/useGoals.ts
 import { useCallback, useEffect, useRef, useState } from "react";
+import { NativeModules, Platform } from "react-native";
 import {
   createGoal,
   deleteGoal,
@@ -11,10 +12,7 @@ import {
   syncGoalProgress,
   updateGoal,
 } from "../api/goals";
-import {
-  ActivitySummary,
-  healthKit
-} from "../services/healthKitService";
+import { ActivitySummary, healthKit } from "../services/healthKitService";
 
 export function useGoals() {
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -25,6 +23,7 @@ export function useGoals() {
   const syncingRef = useRef(false);
   const bootstrappedRef = useRef(false);
 
+  // ── Fetch goals from backend ────────────────────────────────
   const fetch = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
@@ -43,10 +42,10 @@ export function useGoals() {
     if (bootstrappedRef.current) return;
     bootstrappedRef.current = true;
 
+    // Bail if native module not available
     if (!healthKit.isAvailable()) return;
 
     try {
-      // Request auth for the core ring metrics
       await healthKit.requestAuth([
         "active_calories",
         "exercise_minutes",
@@ -54,10 +53,8 @@ export function useGoals() {
         "steps",
       ]);
 
-      // Get the user's actual Apple Fitness goals
       const summary = await healthKit.queryActivitySummary();
       if (summary) setActivitySummary(summary);
-      if (!summary) return; // No Apple Watch / no data
 
       // Check which auto-tracked goals already exist
       const current = await getGoals();
@@ -65,7 +62,6 @@ export function useGoals() {
         current.filter((g) => g.auto_track).map((g) => g.metric),
       );
 
-      // Auto-create goals for Apple's rings if they don't exist yet
       const ringGoals: Array<{
         metric: HealthMetric;
         title: string;
@@ -74,37 +70,41 @@ export function useGoals() {
         category: string;
       }> = [];
 
-      if (!existingMetrics.has("active_calories") && summary.moveGoal > 0) {
-        ringGoals.push({
-          metric: "active_calories",
-          title: `Burn ${Math.round(summary.moveGoal)} cal (Move Ring)`,
-          target: Math.round(summary.moveGoal),
-          unit: "kcal",
-          category: "fitness",
-        });
+      // If we have activity summary (Apple Watch), use ring targets
+      if (summary) {
+        if (!existingMetrics.has("active_calories") && summary.moveGoal > 0) {
+          ringGoals.push({
+            metric: "active_calories",
+            title: `Burn ${Math.round(summary.moveGoal)} cal (Move Ring)`,
+            target: Math.round(summary.moveGoal),
+            unit: "kcal",
+            category: "fitness",
+          });
+        }
+        if (
+          !existingMetrics.has("exercise_minutes") &&
+          summary.exerciseGoal > 0
+        ) {
+          ringGoals.push({
+            metric: "exercise_minutes",
+            title: `Exercise ${Math.round(summary.exerciseGoal)} min`,
+            target: Math.round(summary.exerciseGoal),
+            unit: "min",
+            category: "fitness",
+          });
+        }
+        if (!existingMetrics.has("stand_hours") && summary.standGoal > 0) {
+          ringGoals.push({
+            metric: "stand_hours",
+            title: `Stand ${Math.round(summary.standGoal)} hours`,
+            target: Math.round(summary.standGoal),
+            unit: "hrs",
+            category: "fitness",
+          });
+        }
       }
-      if (
-        !existingMetrics.has("exercise_minutes") &&
-        summary.exerciseGoal > 0
-      ) {
-        ringGoals.push({
-          metric: "exercise_minutes",
-          title: `Exercise ${Math.round(summary.exerciseGoal)} min`,
-          target: Math.round(summary.exerciseGoal),
-          unit: "min",
-          category: "fitness",
-        });
-      }
-      if (!existingMetrics.has("stand_hours") && summary.standGoal > 0) {
-        ringGoals.push({
-          metric: "stand_hours",
-          title: `Stand ${Math.round(summary.standGoal)} hours`,
-          target: Math.round(summary.standGoal),
-          unit: "hrs",
-          category: "fitness",
-        });
-      }
-      // Also add steps — not a ring but universally useful
+
+      // Always add steps (works from iPhone, no Watch needed)
       if (!existingMetrics.has("steps")) {
         ringGoals.push({
           metric: "steps",
@@ -127,11 +127,11 @@ export function useGoals() {
             frequency: "daily",
           });
         } catch {
-          // goal might already exist, that's fine
+          // Goal may already exist, ignore
         }
       }
-    } catch {
-      // HealthKit not available or denied — that's ok
+    } catch (e) {
+      console.warn("HealthKit bootstrap error:", e);
     }
   }, []);
 
@@ -141,7 +141,6 @@ export function useGoals() {
     syncingRef.current = true;
 
     try {
-      // Also refresh activity summary
       const summary = await healthKit.queryActivitySummary();
       if (summary) setActivitySummary(summary);
 
@@ -150,10 +149,7 @@ export function useGoals() {
         (g) => g.auto_track && g.metric !== "manual",
       );
 
-      if (autoGoals.length === 0) {
-        syncingRef.current = false;
-        return;
-      }
+      if (autoGoals.length === 0) return;
 
       const metrics = autoGoals.map((g) => g.metric as HealthMetric);
       const uniqueMetrics = [...new Set(metrics)].filter(
@@ -172,35 +168,49 @@ export function useGoals() {
             goal.metric as HealthMetric,
           );
           logs.push({ goal_id: goal.id, value, source: "healthkit" });
-        } catch {}
+        } catch {
+          // Skip failed metrics
+        }
       }
 
       if (logs.length > 0) {
         await syncGoalProgress(logs);
       }
     } catch {
+      // Sync failed silently
     } finally {
       syncingRef.current = false;
     }
   }, []);
 
-  // ── Initial load: bootstrap → sync → fetch ─────────────────
+  // ── Initial load ────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       await fetch();
-      await bootstrapAppleRings();
-      await syncHealthKit();
-      await fetch(true);
+
+      // Only attempt HealthKit if native module actually exists
+      try {
+        if (Platform.OS === "ios" && NativeModules.TrailHealthKit) {
+          await bootstrapAppleRings();
+          await syncHealthKit();
+          await fetch(true);
+        }
+      } catch (e) {
+        console.warn("HealthKit init skipped:", e);
+      }
     })();
   }, []);
 
+  // ── CRUD operations ─────────────────────────────────────────
   const create = useCallback(
     async (goal: Parameters<typeof createGoal>[0]) => {
       const res = await createGoal(goal);
       if (goal.auto_track && goal.metric && goal.metric !== "manual") {
         try {
           await healthKit.requestAuth([goal.metric as HealthMetric]);
-        } catch {}
+        } catch {
+          // Auth failed, goal still created
+        }
       }
       await fetch(true);
       return res;

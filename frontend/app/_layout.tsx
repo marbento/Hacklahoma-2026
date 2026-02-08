@@ -12,7 +12,9 @@ function RootNavigator() {
   useEffect(() => {
     if (isLoading) return;
     const inOnboarding = segments[0] === "onboarding";
-    if (isLoggedIn && hasCompletedOnboarding && inOnboarding) {
+    if (!isLoggedIn && !inOnboarding) {
+      router.replace("/onboarding");
+    } else if (isLoggedIn && hasCompletedOnboarding && inOnboarding) {
       router.replace("/(tabs)");
     }
   }, [isLoading, isLoggedIn, hasCompletedOnboarding, segments]);

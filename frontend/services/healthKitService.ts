@@ -1,6 +1,4 @@
 // frontend/services/healthKitService.ts
-// TypeScript wrapper for TrailHealthKit native module
-
 import { NativeModules, Platform } from "react-native";
 
 const { TrailHealthKit } = NativeModules;
@@ -138,7 +136,6 @@ export const METRIC_DEFS: Record<string, MetricDef> = {
   },
 };
 
-// Permission types needed per metric
 const READ_TYPES: Record<string, string[]> = {
   steps: ["steps"],
   active_calories: ["active_calories"],
@@ -247,10 +244,6 @@ class HealthKitService {
     }
   }
 
-  /**
-   * Query Apple's Activity Summary — returns the user's Move/Exercise/Stand
-   * goals AND current progress. This is what the Apple Fitness rings show.
-   */
   async queryActivitySummary(date?: Date): Promise<ActivitySummary | null> {
     if (!this.isAvailable()) return null;
     try {
