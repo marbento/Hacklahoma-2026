@@ -91,53 +91,78 @@ function App() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#f7f2ff] text-[#16141f] font-pixel">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 right-10 h-80 w-80 rounded-full bg-[#ffb347]/40 blur-3xl" />
-        <div className="absolute bottom-[-80px] left-[-40px] h-96 w-96 rounded-full bg-[#6ee7ff]/40 blur-3xl" />
-        <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(#2d23451a_1px,transparent_1px)] [background-size:18px_18px]" />
-      </div>
-
+    <div className="relative min-h-screen bg-[#0a1410] text-white">
       <div className="relative z-10 flex min-h-screen items-center justify-center p-6">
-        <div className="relative rounded-[48px] bg-gradient-to-br from-white via-white/70 to-white/30 p-[2px] shadow-[0_30px_90px_rgba(58,38,97,0.25)]">
-          <div className="relative h-[680px] w-[330px] overflow-hidden rounded-[46px] bg-gradient-to-b from-white via-[#f9f6ff] to-[#f1ecff]">
-            <div className="absolute left-1/2 top-3 h-6 w-32 -translate-x-1/2 rounded-full border border-black/10 bg-white/80" />
+        <div className="relative rounded-[48px] border border-[#d4af37]/20 p-1">
+          <div className="relative h-[680px] w-[330px] overflow-hidden rounded-[46px] bg-[#0d1914]">
+            <div className="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-full bg-[#0a1410]" />
 
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between px-5 pt-5 text-xs text-[#5f5a73]">
-                <span className="font-medium tracking-[0.2em]">10:42</span>
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70" />
-                  <div className="flex h-3 w-6 items-center justify-start rounded-full border border-black/20 px-0.5">
-                    <div className="h-2 w-3 rounded-full bg-[#1a1528]/70" />
+              <div className="flex items-center justify-between px-6 pt-6 text-[11px] text-[#d4af37]/60">
+                <span className="font-light tracking-wide">10:42</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-[#d4af37]/80" />
+                  <span className="h-1 w-1 rounded-full bg-[#d4af37]/80" />
+                  <div className="flex h-2.5 w-5 items-center justify-start rounded-sm border border-[#d4af37]/30 px-0.5">
+                    <div className="h-1.5 w-2.5 rounded-sm bg-[#d4af37]/80" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-5 pb-6 pt-6">
+              <div className="flex-1 overflow-y-auto px-6 pb-6 pt-8">
                 {activeTab === 'home' && (
                   <>
                     {/* Header with stats */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Your Journey</p>
-                        <h1 className="mt-2 text-2xl font-semibold">The Trail</h1>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="flex items-center gap-1 rounded-xl bg-white px-2 py-1 shadow-md">
-                          <span className="text-lg">👣</span>
-                          <span className="text-xs font-bold text-[#3c2e62]">{totalSteps}</span>
+                    <div className="mb-6">
+                      {/* Top row: label left, time right */}
+                      <div className="flex items-start justify-between mb-3">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-[#7fb69e]/60 font-light">The Trail</p>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="stroke-[#7fb69e]/60" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10" />
+                              <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            <span className="text-sm font-light text-[#d4af37]">{formatMinutes(investedMinutes)}</span>
+                          </div>
+                          <p className="text-[9px] font-light text-[#7fb69e]/60">invested</p>
                         </div>
-                        <div className="flex items-center gap-1 rounded-xl bg-white px-2 py-1 shadow-md">
-                          <span className="text-lg">📦</span>
-                          <span className="text-xs font-bold text-[#3c2e62]">{itemsCollected}</span>
+                      </div>
+
+                      {/* Big step count */}
+                      <div className="mb-3">
+                        <div className="flex items-baseline gap-2">
+                          <h1 className="text-[52px] font-light text-[#d4af37] leading-none tracking-tight">{totalSteps}</h1>
+                          <span className="text-sm font-light text-[#7fb69e]/60 pb-1">steps</span>
+                        </div>
+                      </div>
+
+                      {/* Progress section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[9px] font-light text-[#7fb69e]/60">Start</span>
+                          <span className="text-[11px] font-light text-[#d4af37]">{Math.round((totalSteps / 20) * 100)}% explored</span>
+                          <span className="text-[9px] font-light text-[#7fb69e]/60">Summit</span>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="h-1 w-full rounded-full bg-[#7fb69e]/20 mb-2">
+                          <div
+                            className="h-full rounded-full bg-[#d4af37]"
+                            style={{ width: `${(totalSteps / 20) * 100}%` }}
+                          />
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-1 w-1 rounded-full bg-[#7fb69e]" />
+                          <span className="text-[9px] font-light text-[#7fb69e]">On trail</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Trail View */}
-                    <div className="relative mt-6 h-[450px] overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-b from-[#e8f4ff] via-[#f0e8ff] to-[#ffe8f4] p-4 shadow-[0_16px_30px_rgba(87,61,140,0.12)]">
+                    <div className="relative h-[420px] overflow-hidden rounded-2xl border border-[#d4af37]/10 bg-[#0a1410] p-5">
                       {/* Trail tiles - winding path from bottom to top */}
                       <div className="relative h-full">
                         {/* Generate 20 tiles in a winding pattern */}
@@ -186,14 +211,13 @@ function App() {
                             >
                               {/* Tile */}
                               <div
-                                className={`h-8 w-8 rounded-lg border-2 transition-all ${
+                                className={`h-6 w-6 rounded-full transition-all ${
                                   isPastTile
-                                    ? 'border-emerald-400 bg-emerald-100'
+                                    ? 'border border-[#7fb69e]/40 bg-[#7fb69e]/20'
                                     : isCurrentTile
-                                    ? 'border-cyan-400 bg-cyan-100 shadow-lg'
-                                    : 'border-gray-300 bg-white/60'
+                                    ? 'border-2 border-[#d4af37] bg-[#d4af37]/30'
+                                    : 'border border-[#9b8ac4]/20 bg-transparent'
                                 }`}
-                                style={{ imageRendering: 'pixelated' }}
                               />
 
                               {/* Avatar on current tile */}
@@ -223,37 +247,37 @@ function App() {
                         })}
                       </div>
 
-                      {/* Fog overlay gradient - obscures top of trail */}
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-transparent" />
+                      {/* Fog overlay - obscures top of trail */}
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0a1410] via-transparent to-transparent" />
                     </div>
 
                     {/* Time Invested This Week */}
-                    <div className="mt-6 rounded-2xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Time Invested This Week</p>
-                      <p className="mt-2 text-3xl font-bold text-[#2f254b]">{formatMinutes(investedMinutes)}</p>
-                      <p className="mt-1 text-xs text-[#6b6286]">+22% from last week</p>
+                    <div className="mt-8 rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 p-5">
+                      <p className="text-[10px] uppercase tracking-[0.25em] text-[#7fb69e]/60 font-light">Time Invested This Week</p>
+                      <p className="mt-3 text-4xl font-light text-[#d4af37]">{formatMinutes(investedMinutes)}</p>
+                      <p className="mt-2 text-xs text-[#7fb69e] font-light">+22% from last week</p>
                     </div>
 
                     {/* Recent App Activities */}
-                    <div className="mt-6">
-                      <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Recent Activities</h3>
-                      <div className="mt-3 space-y-2">
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                    <div className="mt-8">
+                      <h3 className="text-[10px] font-light uppercase tracking-[0.25em] text-[#7fb69e]/60 mb-4">Recent Activities</h3>
+                      <div className="space-y-3">
+                        <div className="rounded-xl border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-4">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm font-semibold">Deep Focus</p>
-                              <p className="text-xs text-[#6b6286]">2h in Canvas</p>
+                              <p className="text-sm font-light text-[#d4af37]">Deep Focus</p>
+                              <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">2h in Canvas</p>
                             </div>
-                            <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-xs text-emerald-700">+2 👣</span>
+                            <span className="text-xs text-[#7fb69e] font-light">+2 👣</span>
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                        <div className="rounded-xl border border-[#9b8ac4]/10 bg-[#9b8ac4]/5 p-4">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm font-semibold">Project Work</p>
-                              <p className="text-xs text-[#6b6286]">1h 30m in Notion</p>
+                              <p className="text-sm font-light text-[#d4af37]">Project Work</p>
+                              <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">1h 30m in Notion</p>
                             </div>
-                            <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-xs text-emerald-700">+1 👣</span>
+                            <span className="text-xs text-[#7fb69e] font-light">+1 👣</span>
                           </div>
                         </div>
                       </div>
@@ -363,154 +387,145 @@ function App() {
                 )}
 
                 {activeTab === 'goals' && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Integrations</p>
-                      <h1 className="mt-2 text-2xl font-semibold">Connected Apps</h1>
-                      <p className="mt-1 text-xs text-[#6b6286]">Earn camping items by connecting apps</p>
+                      <p className="text-[10px] uppercase tracking-[0.25em] text-[#7fb69e]/60 font-light">Integrations</p>
+                      <h1 className="mt-3 text-3xl font-light text-[#d4af37]">Connected Apps</h1>
+                      <p className="mt-2 text-xs text-[#7fb69e]/60 font-light">Earn camping items by connecting apps</p>
                     </div>
 
                     {/* Connected Apps with Items */}
-                    <div className="rounded-3xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
+                    <div className="rounded-xl border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-200 text-2xl">📚</div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#7fb69e]/10 text-xl">📚</div>
                         <div className="flex-1">
-                          <p className="text-base font-semibold text-[#2f254b]">Canvas LMS</p>
-                          <p className="text-xs text-[#6b6286]">Tracks study time</p>
+                          <p className="text-sm font-light text-[#d4af37]">Canvas LMS</p>
+                          <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">Tracks study time</p>
                         </div>
-                        <span className="text-lg font-bold text-emerald-600">✓</span>
+                        <span className="text-sm font-light text-[#7fb69e]">✓</span>
                       </div>
-                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                      <div className="mt-4 rounded-lg border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">⛺</span>
+                          <span className="text-lg">⛺</span>
                           <div>
-                            <p className="text-sm font-semibold text-[#2f254b]">Study Tent</p>
-                            <p className="text-xs text-[#6b6286]">+2 fog reveal distance</p>
+                            <p className="text-xs font-light text-[#d4af37]">Study Tent</p>
+                            <p className="text-[10px] text-[#7fb69e]/60 font-light mt-0.5">+2 fog reveal distance</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-3xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
+                    <div className="rounded-xl border border-[#9b8ac4]/10 bg-[#9b8ac4]/5 p-5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-200 text-2xl">💼</div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#9b8ac4]/10 text-xl">💼</div>
                         <div className="flex-1">
-                          <p className="text-base font-semibold text-[#2f254b]">Notion</p>
-                          <p className="text-xs text-[#6b6286]">Tracks work time</p>
+                          <p className="text-sm font-light text-[#d4af37]">Notion</p>
+                          <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">Tracks work time</p>
                         </div>
-                        <span className="text-lg font-bold text-purple-600">✓</span>
+                        <span className="text-sm font-light text-[#7fb69e]">✓</span>
                       </div>
-                      <div className="mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3">
+                      <div className="mt-4 rounded-lg border border-[#9b8ac4]/10 bg-[#9b8ac4]/5 p-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">🔦</span>
+                          <span className="text-lg">🔦</span>
                           <div>
-                            <p className="text-sm font-semibold text-[#2f254b]">Flashlight</p>
-                            <p className="text-xs text-[#6b6286]">See path connections</p>
+                            <p className="text-xs font-light text-[#d4af37]">Flashlight</p>
+                            <p className="text-[10px] text-[#7fb69e]/60 font-light mt-0.5">See path connections</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-3xl border border-white/60 bg-white p-4 shadow-[0_14px_26px_rgba(87,61,140,0.12)] opacity-60">
+                    <div className="rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 p-5 opacity-50">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200 text-2xl">🎯</div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#d4af37]/10 text-xl">🎯</div>
                         <div className="flex-1">
-                          <p className="text-base font-semibold text-[#2f254b]">Google Calendar</p>
-                          <p className="text-xs text-[#6b6286]">Add to unlock</p>
+                          <p className="text-sm font-light text-[#d4af37]/70">Google Calendar</p>
+                          <p className="text-xs text-[#d4af37]/50 font-light mt-0.5">Add to unlock</p>
                         </div>
-                        <button className="rounded-lg bg-gray-200 px-3 py-1 text-xs font-bold text-gray-600">Connect</button>
-                      </div>
-                      <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl opacity-40">🧭</span>
-                          <div>
-                            <p className="text-sm font-semibold text-[#2f254b]">Compass</p>
-                            <p className="text-xs text-[#6b6286]">Points to next goal</p>
-                          </div>
-                        </div>
+                        <button className="rounded-lg border border-[#d4af37]/20 px-3 py-1.5 text-[10px] font-light text-[#d4af37] hover:bg-[#d4af37]/10 transition-all">Connect</button>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {activeTab === 'stats' && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Tasks</p>
-                      <h1 className="mt-2 text-2xl font-semibold">Today's Tasks</h1>
-                      <p className="mt-1 text-xs text-[#6b6286]">Complete tasks to earn steps</p>
+                      <p className="text-[10px] uppercase tracking-[0.25em] text-[#7fb69e]/60 font-light">Tasks</p>
+                      <h1 className="mt-3 text-3xl font-light text-[#d4af37]">Today's Tasks</h1>
+                      <p className="mt-2 text-xs text-[#7fb69e]/60 font-light">Complete tasks to earn steps</p>
                     </div>
 
                     {/* Goal Categories */}
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-xl border border-white/60 bg-white p-3 text-center shadow-md">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[#8a83a3]">Personal</p>
-                        <p className="mt-1 text-lg font-bold text-emerald-600">2/5</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-lg border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-4 text-center">
+                        <p className="text-[9px] font-light uppercase tracking-wider text-[#7fb69e]/60">Personal</p>
+                        <p className="mt-2 text-xl font-light text-[#7fb69e]">2/5</p>
                       </div>
-                      <div className="rounded-xl border border-white/60 bg-white p-3 text-center shadow-md">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[#8a83a3]">Academic</p>
-                        <p className="mt-1 text-lg font-bold text-cyan-600">3/6</p>
+                      <div className="rounded-lg border border-[#d4af37]/10 bg-[#d4af37]/5 p-4 text-center">
+                        <p className="text-[9px] font-light uppercase tracking-wider text-[#7fb69e]/60">Academic</p>
+                        <p className="mt-2 text-xl font-light text-[#d4af37]">3/6</p>
                       </div>
-                      <div className="rounded-xl border border-white/60 bg-white p-3 text-center shadow-md">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[#8a83a3]">Professional</p>
-                        <p className="mt-1 text-lg font-bold text-purple-600">1/4</p>
+                      <div className="rounded-lg border border-[#9b8ac4]/10 bg-[#9b8ac4]/5 p-4 text-center">
+                        <p className="text-[9px] font-light uppercase tracking-wider text-[#7fb69e]/60">Professional</p>
+                        <p className="mt-2 text-xl font-light text-[#d4af37]">1/4</p>
                       </div>
                     </div>
 
                     {/* Tasks List */}
-                    <div className="space-y-2">
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 p-4">
                         <div className="flex items-center gap-3">
-                          <input type="checkbox" className="h-5 w-5 rounded border-emerald-400" />
+                          <input type="checkbox" className="h-4 w-4 rounded-sm border-[#d4af37]/30 accent-[#d4af37]" />
                           <div className="flex-1">
-                            <p className="text-base font-semibold text-[#2f254b]">Finish math homework</p>
-                            <p className="text-xs text-[#6b6286]">Academic • Due tonight</p>
+                            <p className="text-sm font-light text-[#d4af37]">Finish math homework</p>
+                            <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">Academic • Due tonight</p>
                           </div>
-                          <span className="text-sm font-bold text-emerald-600">+1 👣</span>
+                          <span className="text-xs font-light text-[#7fb69e]">+1 👣</span>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-4">
                         <div className="flex items-center gap-3">
-                          <input type="checkbox" className="h-5 w-5 rounded border-cyan-400" />
+                          <input type="checkbox" className="h-4 w-4 rounded-sm border-[#7fb69e]/30 accent-[#7fb69e]" />
                           <div className="flex-1">
-                            <p className="text-base font-semibold text-[#2f254b]">Read 20 pages</p>
-                            <p className="text-xs text-[#6b6286]">Personal • Daily goal</p>
+                            <p className="text-sm font-light text-[#d4af37]">Read 20 pages</p>
+                            <p className="text-xs text-[#7fb69e]/50 font-light mt-0.5">Personal • Daily goal</p>
                           </div>
-                          <span className="text-sm font-bold text-cyan-600">+1 👣</span>
+                          <span className="text-xs font-light text-[#7fb69e]">+1 👣</span>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#9b8ac4]/10 bg-[#9b8ac4]/5 p-4">
                         <div className="flex items-center gap-3">
-                          <input type="checkbox" className="h-5 w-5 rounded border-purple-400" />
+                          <input type="checkbox" className="h-4 w-4 rounded-sm border-[#9b8ac4]/30 accent-[#9b8ac4]" />
                           <div className="flex-1">
-                            <p className="text-base font-semibold text-[#2f254b]">Update portfolio site</p>
-                            <p className="text-xs text-[#6b6286]">Professional • This week</p>
+                            <p className="text-sm font-light text-[#d4af37]">Update portfolio site</p>
+                            <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">Professional • This week</p>
                           </div>
-                          <span className="text-sm font-bold text-purple-600">+1 👣</span>
+                          <span className="text-xs font-light text-[#7fb69e]">+1 👣</span>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 p-4">
                         <div className="flex items-center gap-3">
-                          <input type="checkbox" className="h-5 w-5 rounded border-cyan-400" />
+                          <input type="checkbox" className="h-4 w-4 rounded-sm border-[#d4af37]/30 accent-[#d4af37]" />
                           <div className="flex-1">
-                            <p className="text-base font-semibold text-[#2f254b]">Study for physics exam</p>
-                            <p className="text-xs text-[#6b6286]">Academic • Tomorrow</p>
+                            <p className="text-sm font-light text-[#d4af37]">Study for physics exam</p>
+                            <p className="text-xs text-[#7fb69e]/60 font-light mt-0.5">Academic • Tomorrow</p>
                           </div>
-                          <span className="text-sm font-bold text-cyan-600">+1 👣</span>
+                          <span className="text-xs font-light text-[#7fb69e]">+1 👣</span>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-white/60 bg-white p-4 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-4">
                         <div className="flex items-center gap-3">
-                          <input type="checkbox" className="h-5 w-5 rounded border-emerald-400" />
+                          <input type="checkbox" className="h-4 w-4 rounded-sm border-[#7fb69e]/30 accent-[#7fb69e]" />
                           <div className="flex-1">
-                            <p className="text-base font-semibold text-[#2f254b]">Morning workout</p>
-                            <p className="text-xs text-[#6b6286]">Personal • Daily habit</p>
+                            <p className="text-sm font-light text-[#d4af37]">Morning workout</p>
+                            <p className="text-xs text-[#7fb69e]/50 font-light mt-0.5">Personal • Daily habit</p>
                           </div>
-                          <span className="text-sm font-bold text-emerald-600">+1 👣</span>
+                          <span className="text-xs font-light text-[#7fb69e]">+1 👣</span>
                         </div>
                       </div>
                     </div>
@@ -520,14 +535,14 @@ function App() {
                 {activeTab === 'profile' && (
                   <div className="flex h-full flex-col">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-[#8a83a3]">Profile</p>
-                      <h1 className="mt-2 text-2xl font-semibold">Avatar Maker</h1>
-                      <p className="mt-1 text-xs text-[#6b6286]">Customize your pixel character</p>
+                      <p className="text-[10px] uppercase tracking-[0.25em] text-[#7fb69e]/60 font-light">Profile</p>
+                      <h1 className="mt-3 text-3xl font-light text-[#d4af37]">Avatar Maker</h1>
+                      <p className="mt-2 text-xs text-[#7fb69e]/60 font-light">Customize your character</p>
                     </div>
 
                     {/* Avatar Preview - Large Display */}
-                    <div className="mt-4 flex-1 rounded-3xl border border-white/60 bg-white p-5 shadow-[0_14px_26px_rgba(87,61,140,0.12)]">
-                      <p className="text-center text-xs uppercase tracking-[0.2em] text-[#8a83a3]">Your Avatar</p>
+                    <div className="mt-6 flex-1 rounded-xl border border-[#d4af37]/10 bg-[#0a1410] p-6">
+                      <p className="text-center text-[10px] uppercase tracking-[0.25em] text-[#7fb69e]/60 font-light">Your Avatar</p>
                       <div className="flex h-full items-center justify-center p-4">
                         {/* 64x64 grid scaled up 3x = 192px for crisp pixels */}
                         <div className="relative" style={{ width: '192px', height: '192px', imageRendering: 'pixelated' }}>
@@ -586,28 +601,28 @@ function App() {
                     </div>
 
                     {/* Customization Controls - Bottom */}
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-6 space-y-3">
                       {/* Body Control */}
-                      <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#7fb69e]/10 bg-[#7fb69e]/5 p-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Body</p>
-                          <div className="flex items-center gap-2">
+                          <p className="text-[10px] font-light uppercase tracking-wider text-[#7fb69e]/60">Body</p>
+                          <div className="flex items-center gap-3">
                             <button
                               onClick={() => setSelectedBody(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#7fb69e]/20 text-[#7fb69e] transition-all hover:bg-[#7fb69e]/10"
                               type="button"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2" strokeLinecap="round">
                                 <path d="M15 18L9 12L15 6" />
                               </svg>
                             </button>
-                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#2f254b]">Type {selectedBody + 1}</span>
+                            <span className="min-w-[60px] text-center text-xs font-light text-[#d4af37]">Type {selectedBody + 1}</span>
                             <button
                               onClick={() => setSelectedBody(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#7fb69e]/20 text-[#7fb69e] transition-all hover:bg-[#7fb69e]/10"
                               type="button"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2" strokeLinecap="round">
                                 <path d="M9 18L15 12L9 6" />
                               </svg>
                             </button>
@@ -616,26 +631,26 @@ function App() {
                       </div>
 
                       {/* Hair Control */}
-                      <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 p-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Hair</p>
-                          <div className="flex items-center gap-2">
+                          <p className="text-[10px] font-light uppercase tracking-wider text-[#7fb69e]/60">Hair</p>
+                          <div className="flex items-center gap-3">
                             <button
                               onClick={() => setSelectedHair(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#d4af37]/20 text-[#d4af37] transition-all hover:bg-[#d4af37]/10"
                               type="button"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2" strokeLinecap="round">
                                 <path d="M15 18L9 12L15 6" />
                               </svg>
                             </button>
-                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#2f254b]">Style {selectedHair + 1}</span>
+                            <span className="min-w-[60px] text-center text-xs font-light text-[#d4af37]">Style {selectedHair + 1}</span>
                             <button
                               onClick={() => setSelectedHair(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#d4af37]/20 text-[#d4af37] transition-all hover:bg-[#d4af37]/10"
                               type="button"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2" strokeLinecap="round">
                                 <path d="M9 18L15 12L9 6" />
                               </svg>
                             </button>
@@ -644,26 +659,26 @@ function App() {
                       </div>
 
                       {/* Clothing Control */}
-                      <div className="rounded-2xl border border-white/60 bg-white p-3 shadow-[0_10px_18px_rgba(87,61,140,0.12)]">
+                      <div className="rounded-xl border border-[#9b8ac4]/10 bg-[#9b8ac4]/5 p-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a83a3]">Clothing</p>
-                          <div className="flex items-center gap-2">
+                          <p className="text-[10px] font-light uppercase tracking-wider text-[#7fb69e]/60">Clothing</p>
+                          <div className="flex items-center gap-3">
                             <button
                               onClick={() => setSelectedClothing(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#9b8ac4]/20 text-[#9b8ac4] transition-all hover:bg-[#9b8ac4]/10"
                               type="button"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2" strokeLinecap="round">
                                 <path d="M15 18L9 12L15 6" />
                               </svg>
                             </button>
-                            <span className="min-w-[60px] text-center text-xs font-semibold text-[#2f254b]">Outfit {selectedClothing + 1}</span>
+                            <span className="min-w-[60px] text-center text-xs font-light text-[#d4af37]">Outfit {selectedClothing + 1}</span>
                             <button
                               onClick={() => setSelectedClothing(prev => prev === 0 ? 1 : 0)}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#6b6286] bg-white text-[#6b6286] transition-all hover:bg-[#e8dcff]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#9b8ac4]/20 text-[#9b8ac4] transition-all hover:bg-[#9b8ac4]/10"
                               type="button"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2.5" strokeLinecap="square">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeWidth="2" strokeLinecap="round">
                                 <path d="M9 18L15 12L9 6" />
                               </svg>
                             </button>
@@ -674,7 +689,7 @@ function App() {
                       {/* Save Button */}
                       <button
                         onClick={handleSaveAvatar}
-                        className="w-full rounded-lg border-2 border-[#2f254b] bg-[#e8dcff] p-3 text-sm font-semibold uppercase tracking-wide text-[#2f254b] shadow-md transition-all hover:bg-[#d6c9ff]"
+                        className="w-full rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/10 p-4 text-sm font-light uppercase tracking-wide text-[#d4af37] transition-all hover:bg-[#d4af37]/15"
                         type="button"
                       >
                         Save Avatar
@@ -684,67 +699,68 @@ function App() {
                 )}
               </div>
 
-              <div className="px-5 pb-6">
-                <div className="grid grid-cols-4 gap-2">
+              <div className="px-6 pb-6">
+                <div className="grid grid-cols-4 gap-3">
                   <button
-                    className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
+                    className={`flex flex-col items-center gap-2 rounded-lg border p-3 transition-all ${
                       activeTab === 'home'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]'
+                        : 'border-transparent text-[#7fb69e]/50'
                     }`}
                     onClick={() => setActiveTab('home')}
                     type="button"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="square" strokeLinejoin="miter">
-                      <path d="M4 10L12 4L20 10" strokeWidth="2.5" />
-                      <path d="M6 10V20H18V10" strokeWidth="2.5" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeWidth="1.5" />
+                      <polyline points="9 22 9 12 15 12 15 22" strokeWidth="1.5" />
                     </svg>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Home</span>
+                    <span className="text-[9px] font-light uppercase tracking-wider">Trail</span>
                   </button>
                   <button
-                    className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
+                    className={`flex flex-col items-center gap-2 rounded-lg border p-3 transition-all ${
                       activeTab === 'goals'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]'
+                        : 'border-transparent text-[#7fb69e]/50'
                     }`}
                     onClick={() => setActiveTab('goals')}
                     type="button"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="square" strokeLinejoin="miter">
-                      <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="2.5" />
-                      <path d="M9 12h6M12 9v6" strokeWidth="2.5" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth="1.5" />
+                      <line x1="9" y1="9" x2="15" y2="9" strokeWidth="1.5" />
+                      <line x1="9" y1="15" x2="15" y2="15" strokeWidth="1.5" />
                     </svg>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Apps</span>
+                    <span className="text-[9px] font-light uppercase tracking-wider">Apps</span>
                   </button>
                   <button
-                    className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
+                    className={`flex flex-col items-center gap-2 rounded-lg border p-3 transition-all ${
                       activeTab === 'stats'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]'
+                        : 'border-transparent text-[#7fb69e]/50'
                     }`}
                     onClick={() => setActiveTab('stats')}
                     type="button"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="square" strokeLinejoin="miter">
-                      <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2.5" />
-                      <path d="M8 9h8M8 13h5" strokeWidth="2.5" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 11l3 3L22 4" strokeWidth="1.5" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" strokeWidth="1.5" />
                     </svg>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Tasks</span>
+                    <span className="text-[9px] font-light uppercase tracking-wider">Tasks</span>
                   </button>
                   <button
-                    className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2.5 shadow-md transition-all ${
+                    className={`flex flex-col items-center gap-2 rounded-lg border p-3 transition-all ${
                       activeTab === 'profile'
-                        ? 'border-[#2f254b] bg-[#e8dcff] text-[#2f254b]'
-                        : 'border-[#6b6286] bg-white text-[#6b6286]'
+                        ? 'border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]'
+                        : 'border-transparent text-[#7fb69e]/50'
                     }`}
                     onClick={() => setActiveTab('profile')}
                     type="button"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="square" strokeLinejoin="miter">
-                      <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" strokeWidth="2.5" />
-                      <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" strokeWidth="2.5" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-current" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="1.5" />
+                      <circle cx="12" cy="7" r="4" strokeWidth="1.5" />
                     </svg>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Profile</span>
+                    <span className="text-[9px] font-light uppercase tracking-wider">Avatar</span>
                   </button>
                 </div>
               </div>
