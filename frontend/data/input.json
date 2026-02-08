@@ -1,0 +1,47 @@
+{
+  "user": {
+    "id": "mock-001",
+    "name": "Avery Park"
+  },
+  "rules": {
+    "stepsPerPositiveHour": 1,
+    "stepsPerTask": 3
+  },
+  "today": {
+    "date": "2026-02-08",
+    "productiveHours": 1.6,
+    "negativeHours": 0.5,
+    "tasksCompleted": 1,
+    "stepsFromHours": 1,
+    "stepsFromTasks": 3,
+    "totalStepsEarned": 4,
+    "stepsInvested": 6,
+    "stepsBanked": 4,
+    "behaviorLog": [
+      {
+        "time": "09:10",
+        "type": "productive",
+        "app": "Notion",
+        "minutes": 35
+      },
+      {
+        "time": "10:00",
+        "type": "productive",
+        "app": "Google Calendar",
+        "minutes": 25
+      },
+      {
+        "time": "13:30",
+        "type": "negative",
+        "app": "Instagram",
+        "minutes": 12
+      },
+      {
+        "time": "15:05",
+        "type": "productive",
+        "app": "Canvas",
+        "minutes": 36
+      }
+    ]
+  }
+}

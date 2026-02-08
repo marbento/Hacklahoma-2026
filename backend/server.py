@@ -43,6 +43,21 @@ class AppClassification(BaseModel):
     waste_score: float  # 0.0 (productive) to 1.0 (very wasteful)
 
 
+class BehaviorLogEntry(BaseModel):
+    time: str  # "HH:MM" format
+    app: str
+    minutes: float
+
+
+class DailyUsageRequest(BaseModel):
+    date: Optional[str] = None
+    behaviorLog: List[BehaviorLogEntry]
+
+
+# Constants
+DEFAULT_WASTEFUL_BASELINE = 0.85  # Average social media waste score for comparison
+
+
 # App Classification Database
 APP_CLASSIFICATIONS = {
     # Social Media (High Waste)
@@ -280,6 +295,166 @@ def predict_wasted_time(
     }
 
 
+def predict_saved_time(
+    app_name: str, time_accessed: str, duration_opened_minutes: float
+) -> dict:
+    """
+    Predict saved time based on app classification compared to a wasteful baseline.
+
+    Formula:
+    saved_time = duration * (baseline_waste_score - waste_score) * time_factor
+
+    Where:
+    - baseline_waste_score: DEFAULT_WASTEFUL_BASELINE (0.85)
+    - waste_score: 0.0 (productive) to 1.0 (very wasteful)
+    - time_factor: Multiplier based on time of day
+
+    Positive values indicate time saved (productive apps).
+    Negative values indicate opportunity cost (wasteful apps).
+    """
+    classification = get_app_classification(app_name)
+    time_factor = get_time_factor(time_accessed)
+    waste_score = classification["waste_score"]
+
+    # Calculate saved time (positive for productive apps, negative for wasteful apps)
+    saved_minutes = (
+        duration_opened_minutes
+        * (DEFAULT_WASTEFUL_BASELINE - waste_score)
+        * time_factor
+    )
+
+    # Calculate save percentage relative to baseline
+    baseline_wasted = duration_opened_minutes * DEFAULT_WASTEFUL_BASELINE * time_factor
+    save_percentage = (
+        round((saved_minutes / baseline_wasted) * 100, 2) if baseline_wasted > 0 else 0
+    )
+
+    return {
+        "predicted_saved_minutes": round(saved_minutes, 2),
+        "actual_duration_minutes": duration_opened_minutes,
+        "save_percentage": save_percentage,
+        "app_classification": {
+            "app_name": app_name,
+            "category": classification["category"],
+            "is_productive": classification["is_productive"],
+            "waste_score": waste_score,
+        },
+        "time_factor": round(time_factor, 2),
+        "baseline_waste_score": DEFAULT_WASTEFUL_BASELINE,
+        "recommendation": "time_saved" if saved_minutes > 0 else "opportunity_cost",
+    }
+
+
+def analyze_daily_usage(
+    behavior_log: List[BehaviorLogEntry], date: Optional[str] = None
+) -> dict:
+    """
+    Analyze a day's app usage and return comprehensive summary.
+
+    Processes each behavior log entry, calculates time saved and wasted,
+    and aggregates totals by category and app type.
+    """
+    total_duration = 0.0
+    total_time_saved = 0.0
+    total_time_wasted = 0.0
+
+    productive_count = 0
+    productive_minutes = 0.0
+    productive_saved = 0.0
+
+    wasteful_count = 0
+    wasteful_minutes = 0.0
+    wasteful_wasted = 0.0
+
+    by_category = {}
+    sessions = []
+
+    for entry in behavior_log:
+        app_name = entry.app
+        time_accessed = entry.time
+        duration = entry.minutes
+
+        # Calculate wasted and saved time
+        wasted_result = predict_wasted_time(app_name, time_accessed, duration)
+        saved_result = predict_saved_time(app_name, time_accessed, duration)
+
+        wasted_minutes = wasted_result["predicted_wasted_minutes"]
+        saved_minutes = saved_result["predicted_saved_minutes"]
+
+        classification = get_app_classification(app_name)
+        category = classification["category"]
+        is_productive = classification["is_productive"]
+
+        # Accumulate totals
+        total_duration += duration
+        total_time_wasted += wasted_minutes
+        total_time_saved += saved_minutes if saved_minutes > 0 else 0
+
+        # Track by productivity
+        if is_productive:
+            productive_count += 1
+            productive_minutes += duration
+            productive_saved += saved_minutes if saved_minutes > 0 else 0
+        else:
+            wasteful_count += 1
+            wasteful_minutes += duration
+            wasteful_wasted += wasted_minutes
+
+        # Track by category
+        if category not in by_category:
+            by_category[category] = {"minutes": 0.0, "saved": 0.0, "wasted": 0.0}
+
+        by_category[category]["minutes"] += duration
+        if saved_minutes > 0:
+            by_category[category]["saved"] += saved_minutes
+        else:
+            by_category[category]["wasted"] += wasted_minutes
+
+        # Add session details
+        sessions.append(
+            {
+                "app": app_name,
+                "time": time_accessed,
+                "duration_minutes": round(duration, 2),
+                "time_saved": round(saved_minutes, 2),
+                "time_wasted": round(wasted_minutes, 2),
+                "category": category,
+                "is_productive": is_productive,
+            }
+        )
+
+    # Calculate net time saved
+    net_time_saved = total_time_saved - total_time_wasted
+
+    # Round category totals
+    for category in by_category:
+        by_category[category]["minutes"] = round(by_category[category]["minutes"], 2)
+        by_category[category]["saved"] = round(by_category[category]["saved"], 2)
+        by_category[category]["wasted"] = round(by_category[category]["wasted"], 2)
+
+    return {
+        "date": date,
+        "total_duration_minutes": round(total_duration, 2),
+        "total_time_saved_minutes": round(total_time_saved, 2),
+        "total_time_wasted_minutes": round(total_time_wasted, 2),
+        "net_time_saved_minutes": round(net_time_saved, 2),
+        "breakdown": {
+            "productive_apps": {
+                "count": productive_count,
+                "total_minutes": round(productive_minutes, 2),
+                "time_saved": round(productive_saved, 2),
+            },
+            "wasteful_apps": {
+                "count": wasteful_count,
+                "total_minutes": round(wasteful_minutes, 2),
+                "time_wasted": round(wasteful_wasted, 2),
+            },
+        },
+        "by_category": by_category,
+        "sessions": sessions,
+    }
+
+
 # API Endpoints
 
 
@@ -384,3 +559,39 @@ async def batch_predict(requests: List[AppUsageRequest]):
         "total_wasted_minutes": round(total_wasted, 2),
         "total_sessions": len(results),
     }
+
+
+@app.post("/analyze-day")
+async def analyze_day(request: DailyUsageRequest):
+    """
+    Analyze a day's app usage and return comprehensive summary.
+
+    Accepts daily usage data with behavior log entries and returns:
+    - Total time saved (from productive apps)
+    - Total time wasted (from wasteful apps)
+    - Net time saved
+    - Breakdown by category and app type
+    - Individual session details
+
+    Example request:
+    {
+        "date": "2026-02-08",
+        "behaviorLog": [
+            {
+                "time": "09:10",
+                "app": "Notion",
+                "minutes": 35.0
+            },
+            {
+                "time": "13:30",
+                "app": "Instagram",
+                "minutes": 12.0
+            }
+        ]
+    }
+    """
+    try:
+        result = analyze_daily_usage(request.behaviorLog, request.date)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
