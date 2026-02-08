@@ -4,7 +4,12 @@
       "Bash(npm run dev:*)",
       "Bash(ls:*)",
       "Bash(python:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd file content extraction to Canvas sync\n\nNow fetches and extracts content from:\n✅ Text files \\(.txt, .md, .json, .xml, etc.\\) - full text extracted\n✅ PDF files - noted in description for Gemini context\n✅ Word docs \\(.docx\\) - noted in description for Gemini context\n✅ All other file types - logged with content type\n\nEnhanced description format with clear sections:\n- Assignment Files \\(with actual text content\\)\n- Rubric Criteria \\(with rating levels\\)\n- Quiz Questions \\(up to 15, with full question text\\)\n\nGemini now gets complete assignment context including:\n- Original description\n- All attached file contents \\(text-based\\)\n- Detailed rubric with rating scales\n- Full quiz questions with point values\n\nThis enables AI to generate study plans based on ACTUAL assignment materials.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(python3:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd demo user seeding for Hacklahoma presentation\n\nCreated Avery Park mock user with realistic 3-day history:\n- POST /dev/seed-mock-user endpoint \\(dev-only\\)\n- Email: avery.park@demo.com / Password: demo123\n\nDemo includes:\n✅ 3 active goals \\(study, workout, sleep\\)\n✅ 14 total steps earned across 3 days\n✅ 10 steps invested \\(trail position\\)\n✅ 4 steps banked \\(ready to invest\\)\n✅ 14 screen time logs \\(Notion, Canvas, Instagram, YouTube, etc.\\)\n✅ 3 goal completion logs\n✅ 2 upcoming assignments \\(CS 2334, ENGL 1113\\)\n\nStep calculation:\n- 1 step per hour of productive time\n- 3 steps per completed task\n- Net productive hours algorithm\n\nHistory breakdown:\n- Feb 6: 4 steps earned \\(83 min productive, 36 min wasted\\)\n- Feb 7: 6 steps earned \\(192 min productive, 66 min wasted\\)\n- Feb 8: 4 steps earned \\(96 min productive, 30 min wasted\\)\n\nSee DEMO_USER.md for full details and testing instructions.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }
