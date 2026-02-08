@@ -151,11 +151,12 @@ export default function HomeScreen() {
       (g) => g.is_active && g.today_progress >= g.target_value
     ).length;
 
-    // Algorithm: bankedSteps = (netTime / 5 minutes) + (completedGoals * 10)
-    // Net time: Every 5 minutes saved = 1 step
-    // Completed goals: Each goal = 10 steps
-    const stepsFromTime = Math.max(0, Math.floor(netTimeMinutes / 5));
-    const stepsFromGoals = completedGoals * 10;
+    // Algorithm: bankedSteps = (netTimeHours) + (completedGoals * 3)
+    // Net time: 1 step per hour of productive time
+    // Completed goals: 3 steps per task
+    const netTimeHours = netTimeMinutes / 60;
+    const stepsFromTime = Math.max(0, Math.floor(netTimeHours));
+    const stepsFromGoals = completedGoals * 3;
 
     const totalSteps = stepsFromTime + stepsFromGoals;
 
