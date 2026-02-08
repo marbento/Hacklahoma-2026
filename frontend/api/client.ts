@@ -1,9 +1,7 @@
 // frontend/api/client.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_BASE = __DEV__
-  ? "http://localhost:8000"
-  : "https://trail-api.yourserver.com";
+const API_BASE = "https://hacklahoma2026.onrender.com";
 
 let authToken: string | null = null;
 
@@ -23,7 +21,9 @@ export async function clearAuthToken() {
   await AsyncStorage.removeItem("trail_auth_token");
 }
 
-export function getAuthToken() { return authToken; }
+export function getAuthToken() {
+  return authToken;
+}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
@@ -43,8 +43,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body?: any) =>
-    request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   put: <T>(path: string, body?: any) =>
-    request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      method: "PUT",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };

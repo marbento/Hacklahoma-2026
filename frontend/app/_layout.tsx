@@ -1,8 +1,8 @@
 // frontend/app/_layout.tsx
-import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
 
 function RootNavigator() {
   const { isLoading, isLoggedIn, hasCompletedOnboarding } = useAuth();
@@ -15,8 +15,13 @@ function RootNavigator() {
     const inOnboarding = segments[0] === "onboarding";
 
     if (!isLoggedIn && !inOnboarding) {
+      // Not logged in → go to welcome
       router.replace("/onboarding/welcome");
+    } else if (isLoggedIn && !hasCompletedOnboarding && !inOnboarding) {
+      // Logged in but hasn't finished onboarding → send back to connect-services
+      router.replace("/onboarding/connect-services");
     } else if (isLoggedIn && hasCompletedOnboarding && inOnboarding) {
+      // Done with everything → go to main app
       router.replace("/(tabs)");
     }
   }, [isLoading, isLoggedIn, hasCompletedOnboarding, segments]);
@@ -46,5 +51,10 @@ export default function RootLayout() {
 }
 
 const s = StyleSheet.create({
-  loading: { flex: 1, backgroundColor: "#0a0a0a", justifyContent: "center", alignItems: "center" },
+  loading: {
+    flex: 1,
+    backgroundColor: "#0a0a0a",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

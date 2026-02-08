@@ -167,6 +167,8 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
+						DevelopmentTeam = "2H65T54FRU";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -361,13 +363,16 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.anonymous.hacklahoma-2026";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hacklahoma2026";
 				PRODUCT_NAME = hacklahoma2026;
 				SWIFT_OBJC_BRIDGING_HEADER = "hacklahoma2026/hacklahoma2026-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "2H65T54FRU";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
@@ -392,12 +397,15 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.anonymous.hacklahoma-2026";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hacklahoma2026";
 				PRODUCT_NAME = hacklahoma2026;
 				SWIFT_OBJC_BRIDGING_HEADER = "hacklahoma2026/hacklahoma2026-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "2H65T54FRU";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

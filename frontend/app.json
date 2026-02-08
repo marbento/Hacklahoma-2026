@@ -1,5 +1,24 @@
 {
-  "ios": {
-    "bundleIdentifier": "com.anonymous.hacklahoma-2026"
+  "expo": {
+    "name": "Hacklahoma2026",
+    "slug": "hacklahoma2026",
+    "scheme": "hacklahoma2026",
+    "version": "1.0.0",
+    "platforms": ["ios", "android", "web"],
+    "sdkVersion": "52.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "ios": {
+      "bundleIdentifier": "com.hacklahoma2026",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.hacklahoma2026"
+    },
+    "web": {}
   }
 }
