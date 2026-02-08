@@ -14,11 +14,33 @@
     },
     "ios": {
       "bundleIdentifier": "com.hacklahoma2026",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "appleTeamId": "2H65T54FRU",
+      "infoPlist": {
+        "NSFamilyControlsUsageDescription": "Trail needs Screen Time access to help you stay focused and nudge you when you open distracting apps."
+      }
     },
     "android": {
       "package": "com.hacklahoma2026"
     },
-    "web": {}
+    "web": {},
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+      ],
+      [
+        "react-native-device-activity",
+        {
+          "appleTeamId": "2H65T54FRU",
+          "appGroup": "group.com.hacklahoma2026"
+        }
+      ]
+    ]
   }
 }
