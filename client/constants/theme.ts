@@ -1,12 +1,40 @@
 /**
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Trail app theme (purple/lavender) is in TrailColors.
  */
 
 import { Platform } from 'react-native';
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
+
+/** Trail / The Trail app UI palette */
+export const TrailColors = {
+  background: '#f7f2ff',
+  surface: '#ffffff',
+  cardBorder: 'rgba(255,255,255,0.6)',
+  textPrimary: '#16141f',
+  textSecondary: '#5f5a73',
+  textMuted: '#8a83a3',
+  textBody: '#2f254b',
+  textCaption: '#6b6286',
+  accent: '#2f254b',
+  accentBg: '#e8dcff',
+  accentBgHover: '#d6c9ff',
+  borderButton: '#6b6286',
+  emerald: {
+    dot: '#10b981',
+    bg: '#d1fae5',
+    text: '#047857',
+    border: '#a7f3d0',
+  },
+  cyan: { border: '#22d3ee', bg: '#cffafe' },
+  purple: { border: '#c4b5fd', bg: '#ede9fe' },
+  rose: { bg: '#ffe4e6', text: '#be123c' },
+  amber: { bg: '#fef3c7', text: '#b45309' },
+  shadow: 'rgba(58,38,97,0.25)',
+  shadowCard: 'rgba(87,61,140,0.12)',
+};
 
 export const Colors = {
   light: {

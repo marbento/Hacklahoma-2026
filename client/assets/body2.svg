@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<svg version="1.1" width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+<rect x="20" y="6" width="16" height="5" fill="#EEC39A" />
+<rect x="36" y="6" width="5" height="15" fill="#D9A066" />
+<rect x="20" y="11" width="3" height="10" fill="#EEC39A" />
+<rect x="23" y="11" width="2" height="4" fill="#000000" />
+<rect x="25" y="11" width="5" height="6" fill="#EEC39A" />
+<rect x="30" y="11" width="2" height="4" fill="#000000" />
+<rect x="32" y="11" width="4" height="10" fill="#EEC39A" />
+<rect x="23" y="15" width="2" height="6" fill="#EEC39A" />
+<rect x="30" y="15" width="2" height="6" fill="#EEC39A" />
+<rect x="25" y="17" width="1" height="4" fill="#EEC39A" />
+<rect x="26" y="17" width="3" height="1" fill="#D95763" />
+<rect x="29" y="17" width="1" height="4" fill="#EEC39A" />
+<rect x="26" y="18" width="3" height="3" fill="#EEC39A" />
+<rect x="27" y="21" width="1" height="43" fill="#EEC39A" />
+<rect x="28" y="21" width="6" height="1" fill="#D9A066" />
+<rect x="28" y="22" width="3" height="32" fill="#EEC39A" />
+<rect x="31" y="22" width="3" height="1" fill="#D9A066" />
+<rect x="31" y="23" width="2" height="30" fill="#EEC39A" />
+<rect x="33" y="23" width="1" height="1" fill="#D9A066" />
+<rect x="24" y="24" width="3" height="7" fill="#EEC39A" />
+<rect x="33" y="24" width="4" height="40" fill="#EEC39A" />
+<rect x="20" y="25" width="4" height="8" fill="#EEC39A" />
+<rect x="37" y="25" width="4" height="7" fill="#EEC39A" />
+<rect x="24" y="31" width="1" height="1" fill="#EEC39A" />
+<rect x="25" y="31" width="1" height="8" fill="#D9A066" />
+<rect x="26" y="31" width="1" height="33" fill="#EEC39A" />
+<rect x="38" y="32" width="3" height="11" fill="#EEC39A" />
+<rect x="20" y="33" width="3" height="10" fill="#EEC39A" />
+<rect x="24" y="36" width="1" height="2" fill="#EEC39A" />
+<rect x="24" y="38" width="1" height="5" fill="#D9A066" />
+<rect x="25" y="39" width="1" height="25" fill="#EEC39A" />
+<rect x="24" y="43" width="1" height="21" fill="#EEC39A" />
+<rect x="31" y="53" width="1" height="1" fill="#D9A066" />
+<rect x="32" y="53" width="1" height="1" fill="#EEC39A" />
+<rect x="28" y="54" width="1" height="10" fill="#EEC39A" />
+<rect x="32" y="54" width="1" height="10" fill="#D9A066" />
+</svg>
