@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 from config.database import get_db
 import re
+import base64
 
 CANVAS_BASE = "https://canvas.ou.edu"
 CANVAS_API = f"{CANVAS_BASE}/api/v1"
@@ -57,7 +58,7 @@ async def get_canvas_submission(canvas_token: str, course_id: int, assignment_id
 
 async def get_assignment_details(canvas_token: str, course_id: int, assignment_id: int) -> Optional[Dict[str, Any]]:
     """Get detailed assignment info including files, quiz questions, etc."""
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.get(
                 f"{CANVAS_API}/courses/{course_id}/assignments/{assignment_id}",
@@ -68,6 +69,41 @@ async def get_assignment_details(canvas_token: str, course_id: int, assignment_i
             return resp.json()
         except Exception:
             return None
+
+
+async def download_file_content(file_url: str, canvas_token: str, max_size_mb: int = 5) -> Optional[str]:
+    """Download file from Canvas and extract text content. Limited to text-based files."""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            # Get file info first
+            resp = await client.get(file_url, headers={"Authorization": f"Bearer {canvas_token}"}, follow_redirects=True)
+
+            # Check file size (limit to max_size_mb MB)
+            content_length = resp.headers.get("content-length")
+            if content_length and int(content_length) > max_size_mb * 1024 * 1024:
+                return f"[File too large: {int(content_length) / 1024 / 1024:.1f}MB]"
+
+            # Only process text-based files
+            content_type = resp.headers.get("content-type", "").lower()
+            content = resp.content
+
+            # Try to extract text based on content type
+            if "text" in content_type or "json" in content_type or "xml" in content_type:
+                return content.decode("utf-8", errors="ignore")[:10000]  # Limit to 10k chars
+
+            elif "pdf" in content_type:
+                # For PDFs, return a note - actual parsing would require PyPDF2
+                return "[PDF file attached - contains assignment materials]"
+
+            elif "word" in content_type or "msword" in content_type or "document" in content_type:
+                # For DOCX, return a note - actual parsing would require python-docx
+                return "[Word document attached - contains assignment materials]"
+
+            else:
+                return f"[File attached: {content_type}]"
+
+        except Exception as e:
+            return f"[Error reading file: {str(e)}]"
 
 
 async def get_quiz_questions(canvas_token: str, course_id: int, quiz_id: int) -> List[dict]:
@@ -90,6 +126,7 @@ async def extract_assignment_content(canvas_token: str, course_id: int, assignme
     content = {
         "description_text": _strip_html(assignment.get("description", "")),
         "files": [],
+        "file_contents": [],
         "quiz_questions": [],
         "rubric_criteria": [],
         "submission_types": assignment.get("submission_types", []),
@@ -106,6 +143,27 @@ async def extract_assignment_content(canvas_token: str, course_id: int, assignme
                     "points": criterion.get("points", 0),
                     "ratings": [r.get("description", "") for r in criterion.get("ratings", [])]
                 })
+
+        # Extract files attached to the assignment
+        if details.get("attachments"):
+            for file_info in details.get("attachments", []):
+                file_name = file_info.get("filename", "unknown")
+                file_url = file_info.get("url")
+
+                content["files"].append({
+                    "name": file_name,
+                    "url": file_url,
+                    "size": file_info.get("size", 0),
+                })
+
+                # Try to download and extract content from the file
+                if file_url:
+                    file_content = await download_file_content(file_url, canvas_token)
+                    if file_content:
+                        content["file_contents"].append({
+                            "filename": file_name,
+                            "content": file_content[:5000],  # Limit to 5k chars per file
+                        })
 
         # If it's a quiz, get questions
         if assignment.get("is_quiz_assignment") and assignment.get("quiz_id"):
@@ -163,18 +221,30 @@ async def sync_canvas_assignments(user_id: str, canvas_token: str) -> int:
             if rich_content["description_text"]:
                 enhanced_description = rich_content["description_text"]
 
+            # Add file contents to description
+            if rich_content["file_contents"]:
+                files_text = "\n\n=== Assignment Files ===\n"
+                for file_data in rich_content["file_contents"]:
+                    files_text += f"\n--- {file_data['filename']} ---\n"
+                    files_text += f"{file_data['content']}\n"
+                enhanced_description += files_text
+
             # Add rubric criteria to description
             if rich_content["rubric_criteria"]:
-                rubric_text = "\n\nRubric Criteria:\n"
+                rubric_text = "\n\n=== Rubric Criteria ===\n"
                 for criterion in rich_content["rubric_criteria"]:
                     rubric_text += f"- {criterion['description']} ({criterion['points']} points)\n"
+                    if criterion['ratings']:
+                        rubric_text += f"  Levels: {', '.join(criterion['ratings'])}\n"
                 enhanced_description += rubric_text
 
             # Add quiz questions to description
             if rich_content["quiz_questions"]:
-                quiz_text = "\n\nQuiz Topics:\n"
-                for q in rich_content["quiz_questions"][:10]:  # Limit to first 10
-                    quiz_text += f"- {q['question_name']}: {q['question_text'][:200]}\n"
+                quiz_text = "\n\n=== Quiz Questions ===\n"
+                for q in rich_content["quiz_questions"][:15]:  # Limit to first 15
+                    quiz_text += f"\nQ: {q['question_name']} ({q['points_possible']} pts)\n"
+                    quiz_text += f"   {q['question_text'][:300]}\n"
+                    quiz_text += f"   Type: {q['question_type']}\n"
                 enhanced_description += quiz_text
 
             await db.assignments.update_one(
