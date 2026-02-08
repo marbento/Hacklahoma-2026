@@ -146,7 +146,7 @@ export default function HomeScreen() {
     const timeSummary = getTimeSummary();
     const netTimeMinutes = timeSummary.productiveMin - timeSummary.unproductiveMin;
 
-    // Calculate completed goals
+    // Calculate completed goals TODAY
     const completedGoals = goals.filter(
       (g) => g.is_active && g.today_progress >= g.target_value
     ).length;
@@ -159,8 +159,7 @@ export default function HomeScreen() {
 
     const totalSteps = stepsFromTime + stepsFromGoals;
 
-    // Minimum 100 steps for testing/demo purposes
-    setBankedSteps(Math.max(100, totalSteps));
+    setBankedSteps(totalSteps);
   }, [goals]);
 
   useEffect(() => {

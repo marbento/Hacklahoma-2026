@@ -97,31 +97,38 @@ async def seed_mock_user():
     inserted_goals = await db.goals.insert_many(goals_data)
     goal_ids = [str(gid) for gid in inserted_goals.inserted_ids]
 
-    # 3. Create goal logs
+    # 3. Create goal logs (track completions for each day)
+    # Feb 6: 1 task completed (study goal: 83 min < 180 min target, NOT completed)
+    # Feb 7: 1 task completed (study goal: 192 min > 180 min target, COMPLETED)
+    # Feb 8: 1 task completed (study goal: 96 min < 180 min target, NOT completed)
+    # BUT we track the progress regardless
     goal_logs = [
+        # Feb 6 - Study session (didn't hit 180 min target)
         {
             "user_id": user_id,
             "goal_id": goal_ids[0],
-            "value": 180.0,
+            "value": 83.0,  # 42 + 41 min productive
             "date": datetime(2026, 2, 6, 16, 0, 0),
             "source": "manual",
-            "notes": "Completed coursework",
+            "notes": "Notion + Calendar work",
         },
+        # Feb 7 - Study session (HIT 180 min target!)
         {
             "user_id": user_id,
             "goal_id": goal_ids[0],
-            "value": 192.0,
+            "value": 192.0,  # 60 + 72 + 60 min productive
             "date": datetime(2026, 2, 7, 18, 0, 0),
             "source": "manual",
-            "notes": "Study + Canvas work",
+            "notes": "Notion + Canvas + Microsoft 365",
         },
+        # Feb 8 TODAY - Study session (didn't hit 180 min target)
         {
             "user_id": user_id,
             "goal_id": goal_ids[0],
-            "value": 96.0,
+            "value": 96.0,  # 35 + 25 + 36 min productive
             "date": datetime(2026, 2, 8, 17, 0, 0),
             "source": "manual",
-            "notes": "Notion + Canvas",
+            "notes": "Notion + Calendar + Canvas",
         },
     ]
 
