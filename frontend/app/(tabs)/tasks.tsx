@@ -15,6 +15,7 @@ import {
 import { useAssignments } from "../../hooks/useAssignments";
 import { useDashboard, useEncouragement } from "../../hooks/useDashboard";
 import { useGoals } from "../../hooks/useGoals";
+import { C } from "../../theme";
 
 // ── Time tracking helpers ───────────────────────────────────
 // react-native-device-activity stores events in UserDefaults via the
@@ -25,20 +26,15 @@ try {
 } catch {}
 
 function getTimeSummary(): { productiveMin: number; unproductiveMin: number } {
-  // Try to read events from the package's event log
   try {
     if (DeviceActivity?.getEvents) {
       const events = DeviceActivity.getEvents();
       let unproductive = 0;
       let productive = 0;
-      // Events are logged with types: intervalDidStart, intervalDidEnd,
-      // eventDidReachThreshold, shieldActionSelected
-      // "shieldActionSelected" with action "defer" = user chose to proceed (unproductive)
-      // "shieldActionSelected" with action "close" = user chose to refocus (productive)
       if (Array.isArray(events)) {
         for (const e of events) {
           if (e.type === "shieldActionSelected") {
-            const mins = e.durationMinutes || 5; // estimate per session
+            const mins = e.durationMinutes || 5;
             if (e.action === "defer" || e.action === "unblock") {
               unproductive += mins;
             } else {
@@ -52,7 +48,6 @@ function getTimeSummary(): { productiveMin: number; unproductiveMin: number } {
       return { productiveMin: productive, unproductiveMin: unproductive };
     }
   } catch {}
-  // Fallback: no data yet
   return { productiveMin: 0, unproductiveMin: 0 };
 }
 
@@ -65,12 +60,101 @@ function formatTime(mins: number): string {
 
 // ── Categories for goals ────────────────────────────────────
 const CATEGORIES = [
+  { key: "personal", emoji: "🌟", label: "Personal" },
   { key: "academic", emoji: "📚", label: "Academic" },
+  { key: "professional", emoji: "💼", label: "Professional" },
   { key: "fitness", emoji: "🏃", label: "Fitness" },
   { key: "wellness", emoji: "🧘", label: "Wellness" },
   { key: "creative", emoji: "🎨", label: "Creative" },
-  { key: "other", emoji: "✨", label: "Other" },
 ];
+
+// Completed task interface
+interface CompletedTask {
+  id: string;
+  title: string;
+  category: string;
+  points: number;
+  completedAt: Date;
+}
+
+// Sample completed tasks data
+const SAMPLE_COMPLETED_TASKS: CompletedTask[] = [
+  {
+    id: "1",
+    title: "Submit studio reflection",
+    category: "academic",
+    points: 3,
+    completedAt: new Date(),
+  },
+  {
+    id: "2",
+    title: "Design review scheduled",
+    category: "professional",
+    points: 2,
+    completedAt: new Date(),
+  },
+  {
+    id: "3",
+    title: "Outline v2 delivered",
+    category: "professional",
+    points: 4,
+    completedAt: new Date(),
+  },
+  {
+    id: "4",
+    title: "Prototype handoff sent",
+    category: "professional",
+    points: 3,
+    completedAt: new Date(),
+  },
+  {
+    id: "5",
+    title: "Research notes tagged",
+    category: "academic",
+    points: 2,
+    completedAt: new Date(),
+  },
+  {
+    id: "6",
+    title: "Morning meditation",
+    category: "personal",
+    points: 1,
+    completedAt: new Date(),
+  },
+  {
+    id: "7",
+    title: "Gym workout",
+    category: "fitness",
+    points: 2,
+    completedAt: new Date(),
+  },
+  {
+    id: "8",
+    title: "Journal entry",
+    category: "personal",
+    points: 1,
+    completedAt: new Date(),
+  },
+];
+
+// Group tasks by category
+const groupTasksByCategory = (tasks: CompletedTask[]) => {
+  const groups: Record<string, CompletedTask[]> = {
+    personal: [],
+    academic: [],
+    professional: [],
+  };
+
+  tasks.forEach((task) => {
+    if (groups[task.category]) {
+      groups[task.category].push(task);
+    } else {
+      groups.personal.push(task); // Default to personal
+    }
+  });
+
+  return groups;
+};
 
 export default function TasksScreen() {
   const {
@@ -102,19 +186,24 @@ export default function TasksScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [activeSection, setActiveSection] = useState<
-    "overview" | "goals" | "assignments"
+    "overview" | "goals" | "assignments" | "completed"
   >("overview");
 
   // Goal creation
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newCategory, setNewCategory] = useState("other");
+  const [newCategory, setNewCategory] = useState("personal");
   const [newTarget, setNewTarget] = useState("1");
   const [newUnit, setNewUnit] = useState("times");
 
   // Time tracking
   const timeSummary = useMemo(() => getTimeSummary(), [refreshing]);
   const netResult = timeSummary.productiveMin - timeSummary.unproductiveMin;
+
+  // Completed tasks
+  const completedTasks = SAMPLE_COMPLETED_TASKS;
+  const groupedTasks = groupTasksByCategory(completedTasks);
+  const totalSteps = completedTasks.reduce((sum, task) => sum + task.points, 0);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -201,6 +290,7 @@ export default function TasksScreen() {
   // Section tabs
   const sections = [
     { key: "overview" as const, label: "Overview" },
+    { key: "completed" as const, label: `Completed (${totalSteps})` },
     { key: "goals" as const, label: `Goals (${goals.length})` },
     { key: "assignments" as const, label: `Tasks (${assignments.length})` },
   ];
@@ -213,7 +303,7 @@ export default function TasksScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#7C6FF7"
+            tintColor={C.kelp}
           />
         }
       >
@@ -223,7 +313,12 @@ export default function TasksScreen() {
         )}
 
         {/* Section tabs */}
-        <View style={s.tabRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={s.tabScroll}
+          contentContainerStyle={s.tabScrollContent}
+        >
           {sections.map((sec) => (
             <TouchableOpacity
               key={sec.key}
@@ -240,7 +335,82 @@ export default function TasksScreen() {
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
+
+        {/* ═══════════════════════════════════════════════════════ */}
+        {/* COMPLETED TASKS SECTION                               */}
+        {/* ═══════════════════════════════════════════════════════ */}
+        {activeSection === "completed" && (
+          <>
+            {/* Header */}
+            <View style={s.completedHeader}>
+              <Text style={s.completedTitle}>COMPLETED TASKS</Text>
+              <Text style={s.completedSubtitle}>
+                Crossed-off work that banked steps
+              </Text>
+              <View style={s.todayBadge}>
+                <Text style={s.todayText}>TODAY</Text>
+                <Text style={s.stepsCount}>{totalSteps} STEPS BANKED</Text>
+              </View>
+            </View>
+
+            {/* Task feed by category */}
+            {["personal", "academic", "professional"].map((category) => {
+              const tasks = groupedTasks[category];
+              if (!tasks || tasks.length === 0) return null;
+
+              const categoryLabel =
+                category.charAt(0).toUpperCase() + category.slice(1);
+              const categoryEmoji =
+                CATEGORIES.find((c) => c.key === category)?.emoji || "🌟";
+
+              return (
+                <View key={category} style={s.categorySection}>
+                  <View style={s.categoryHeader}>
+                    <Text style={s.categoryTitle}>
+                      {categoryEmoji} {categoryLabel}
+                    </Text>
+                    <View style={s.categoryStats}>
+                      <Text style={s.categoryCount}>{tasks.length} tasks</Text>
+                      <Text style={s.categoryPoints}>
+                        +{tasks.reduce((sum, t) => sum + t.points, 0)} 🏆
+                      </Text>
+                    </View>
+                  </View>
+
+                  {tasks.map((task) => (
+                    <View key={task.id} style={s.completedTask}>
+                      <View style={s.taskCheckbox}>
+                        <Text style={s.checkmark}>✓</Text>
+                      </View>
+                      <View style={s.taskContent}>
+                        <Text style={s.taskTitle}>{task.title}</Text>
+                        <Text style={s.taskTime}>
+                          {task.completedAt.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </Text>
+                      </View>
+                      <View style={s.taskPoints}>
+                        <Text style={s.pointsText}>+{task.points} 🏆</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              );
+            })}
+
+            {/* Empty state */}
+            {completedTasks.length === 0 && (
+              <View style={s.emptyCard}>
+                <Text style={{ fontSize: 48 }}>📝</Text>
+                <Text style={s.emptyTitle}>No completed tasks yet</Text>
+                <Text style={s.emptyHint}>Complete tasks to see them here</Text>
+              </View>
+            )}
+          </>
+        )}
 
         {/* ═══════════════════════════════════════════════════════ */}
         {/* OVERVIEW SECTION                                       */}
@@ -259,6 +429,10 @@ export default function TasksScreen() {
                 <View style={s.stat}>
                   <Text style={s.statNum}>{dashboard.assignments_count}</Text>
                   <Text style={s.statLabel}>Due This Week</Text>
+                </View>
+                <View style={s.stat}>
+                  <Text style={s.statNum}>{totalSteps}</Text>
+                  <Text style={s.statLabel}>Steps Banked</Text>
                 </View>
               </View>
             )}
@@ -300,13 +474,13 @@ export default function TasksScreen() {
               </Text>
               <View style={s.timeRow}>
                 <Text style={s.timeLabel}>Productive time</Text>
-                <Text style={[s.timeValue, { color: "#4CAF50" }]}>
+                <Text style={[s.timeValue, { color: C.success }]}>
                   +{formatTime(timeSummary.productiveMin)}
                 </Text>
               </View>
               <View style={s.timeRow}>
                 <Text style={s.timeLabel}>Unproductive time</Text>
-                <Text style={[s.timeValue, { color: "#E53935" }]}>
+                <Text style={[s.timeValue, { color: C.danger }]}>
                   -{formatTime(timeSummary.unproductiveMin)}
                 </Text>
               </View>
@@ -315,7 +489,7 @@ export default function TasksScreen() {
                   s.timeRow,
                   {
                     borderTopWidth: 1,
-                    borderTopColor: "#333",
+                    borderTopColor: C.border,
                     paddingTop: 8,
                     marginTop: 4,
                   },
@@ -325,7 +499,7 @@ export default function TasksScreen() {
                 <Text
                   style={[
                     s.timeValue,
-                    { color: netResult >= 0 ? "#4CAF50" : "#E53935" },
+                    { color: netResult >= 0 ? C.success : C.danger },
                   ]}
                 >
                   {netResult >= 0 ? "+" : "-"}
@@ -403,7 +577,7 @@ export default function TasksScreen() {
                 <TextInput
                   style={s.input}
                   placeholder="e.g., Read 5 pages per day"
-                  placeholderTextColor="#555"
+                  placeholderTextColor={C.textLight}
                   value={newTitle}
                   onChangeText={setNewTitle}
                 />
@@ -419,7 +593,7 @@ export default function TasksScreen() {
                       <Text
                         style={[
                           s.catText,
-                          newCategory === c.key && { color: "#fff" },
+                          newCategory === c.key && { color: C.textOnKelp },
                         ]}
                       >
                         {c.label}
@@ -433,7 +607,7 @@ export default function TasksScreen() {
                     <TextInput
                       style={s.input}
                       placeholder="5"
-                      placeholderTextColor="#555"
+                      placeholderTextColor={C.textLight}
                       value={newTarget}
                       onChangeText={setNewTarget}
                       keyboardType="numeric"
@@ -444,7 +618,7 @@ export default function TasksScreen() {
                     <TextInput
                       style={s.input}
                       placeholder="pages"
-                      placeholderTextColor="#555"
+                      placeholderTextColor={C.textLight}
                       value={newUnit}
                       onChangeText={setNewUnit}
                     />
@@ -487,7 +661,7 @@ export default function TasksScreen() {
                       <TouchableOpacity
                         onPress={() => handleDelete(g.id, g.title)}
                       >
-                        <Text style={{ color: "#666" }}>✕</Text>
+                        <Text style={{ color: C.textLight }}>✕</Text>
                       </TouchableOpacity>
                     </View>
                     <View style={s.bar}>
@@ -495,7 +669,7 @@ export default function TasksScreen() {
                         style={[
                           s.barFill,
                           { width: `${pct}%` as any },
-                          met && { backgroundColor: "#4CAF50" },
+                          met && { backgroundColor: C.success },
                         ]}
                       />
                     </View>
@@ -641,48 +815,55 @@ export default function TasksScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: C.beige },
   scroll: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 32, fontWeight: "bold", color: "#fff", marginTop: 10 },
-  subtitle: { fontSize: 15, color: "#888", marginBottom: 4 },
+  title: { fontSize: 32, fontWeight: "bold", color: C.kelp, marginTop: 10 },
+  subtitle: { fontSize: 15, color: C.textMid, marginBottom: 4 },
 
   // Section tabs
+  tabScroll: { marginTop: 16, marginBottom: 8 },
+  tabScrollContent: { paddingRight: 20 },
   tabRow: { flexDirection: "row", gap: 8, marginTop: 16, marginBottom: 8 },
   tab: {
-    flex: 1,
+    paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: C.cream,
+    marginRight: 8,
   },
-  tabActive: { backgroundColor: "#7C6FF7", borderColor: "#7C6FF7" },
-  tabText: { color: "#888", fontSize: 13, fontWeight: "600" },
-  tabTextActive: { color: "#fff" },
+  tabActive: { backgroundColor: C.kelp, borderColor: C.kelp },
+  tabText: { color: C.textMid, fontSize: 13, fontWeight: "600" },
+  tabTextActive: { color: C.textOnKelp },
 
   // Stats
   statsRow: { flexDirection: "row", gap: 12, marginTop: 12 },
   stat: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     borderRadius: 14,
     padding: 16,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: C.cream,
   },
-  statNum: { color: "#7C6FF7", fontSize: 28, fontWeight: "bold" },
-  statLabel: { color: "#888", fontSize: 12, marginTop: 4 },
+  statNum: { color: C.kelp, fontSize: 28, fontWeight: "bold" },
+  statLabel: { color: C.textLight, fontSize: 12, marginTop: 4 },
 
   // Progress card
   progressCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     borderRadius: 14,
     padding: 16,
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: C.cream,
   },
   progressLabel: {
     fontSize: 11,
-    color: "#666",
+    color: C.textLight,
     letterSpacing: 2,
     fontWeight: "600",
     marginBottom: 8,
@@ -692,25 +873,27 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  progressText: { color: "#ccc", fontSize: 14 },
-  progressPct: { color: "#888", fontSize: 14 },
+  progressText: { color: C.textDark, fontSize: 14 },
+  progressPct: { color: C.textLight, fontSize: 14 },
   progressBar: {
     height: 6,
-    backgroundColor: "#333",
+    backgroundColor: C.parchment,
     borderRadius: 3,
     overflow: "hidden",
   },
-  progressFill: { height: 6, backgroundColor: "#7C6FF7", borderRadius: 3 },
+  progressFill: { height: 6, backgroundColor: C.kelp, borderRadius: 3 },
 
   // Time card
   timeCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     borderRadius: 14,
     padding: 16,
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: C.cream,
   },
   timeBig: {
-    color: "#4CAF50",
+    color: C.success,
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 12,
@@ -720,7 +903,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 4,
   },
-  timeLabel: { color: "#888", fontSize: 14 },
+  timeLabel: { color: C.textLight, fontSize: 14 },
   timeValue: { fontSize: 14, fontWeight: "600" },
 
   // Sections
@@ -728,7 +911,7 @@ const s = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#ccc",
+    color: C.textDark,
     marginBottom: 10,
   },
 
@@ -739,43 +922,166 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     gap: 10,
   },
-  goalName: { color: "#fff", fontSize: 15 },
-  goalDone: { color: "#4CAF50", textDecorationLine: "line-through" },
-  goalProg: { color: "#888", fontSize: 12, marginTop: 2 },
+  goalName: { color: C.textDark, fontSize: 15 },
+  goalDone: { color: C.success, textDecorationLine: "line-through" },
+  goalProg: { color: C.textLight, fontSize: 12, marginTop: 2 },
+
+  // Completed Tasks Section
+  completedHeader: {
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  completedTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: C.kelp,
+    marginBottom: 4,
+  },
+  completedSubtitle: {
+    fontSize: 14,
+    color: C.textLight,
+    marginBottom: 12,
+  },
+  todayBadge: {
+    backgroundColor: C.cardBg,
+    borderRadius: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: C.cream,
+  },
+  todayText: {
+    fontSize: 11,
+    color: C.textLight,
+    letterSpacing: 2,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  stepsCount: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: C.kelp,
+  },
+
+  // Category sections
+  categorySection: {
+    marginTop: 20,
+  },
+  categoryHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: C.textDark,
+  },
+  categoryStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  categoryCount: {
+    fontSize: 12,
+    color: C.textLight,
+  },
+  categoryPoints: {
+    fontSize: 12,
+    color: C.kelp,
+    fontWeight: "600",
+  },
+
+  // Completed task item
+  completedTask: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: C.cardBg,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: C.cream,
+  },
+  taskCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: C.success + "20",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  checkmark: {
+    color: C.success,
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  taskContent: {
+    flex: 1,
+  },
+  taskTitle: {
+    fontSize: 15,
+    color: C.textDark,
+    fontWeight: "500",
+  },
+  taskTime: {
+    fontSize: 12,
+    color: C.textLight,
+    marginTop: 2,
+  },
+  taskPoints: {
+    backgroundColor: C.kelp + "20",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  pointsText: {
+    fontSize: 12,
+    color: C.kelp,
+    fontWeight: "700",
+  },
 
   // Goal cards (goals section)
   addBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#7C6FF7",
+    backgroundColor: C.kelp,
     alignItems: "center",
     justifyContent: "center",
   },
-  addBtnText: { color: "#fff", fontSize: 24, fontWeight: "bold" },
+  addBtnText: { color: C.textOnKelp, fontSize: 24, fontWeight: "bold" },
   createCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     borderRadius: 16,
     padding: 20,
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: C.cream,
   },
   createLabel: {
     fontSize: 11,
-    color: "#666",
+    color: C.textLight,
     letterSpacing: 2,
     marginBottom: 12,
     fontWeight: "600",
   },
   input: {
-    backgroundColor: "#111",
+    backgroundColor: C.inputBg,
     borderRadius: 10,
     padding: 14,
-    color: "#fff",
+    color: C.textDark,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: C.border,
   },
-  fieldLabel: { fontSize: 12, color: "#888", marginTop: 12, marginBottom: 6 },
+  fieldLabel: {
+    fontSize: 12,
+    color: C.textLight,
+    marginTop: 12,
+    marginBottom: 6,
+  },
   catRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   catPill: {
     flexDirection: "row",
@@ -783,138 +1089,151 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#222",
+    backgroundColor: C.parchment,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: C.cream,
   },
-  catActive: { backgroundColor: "#7C6FF7", borderColor: "#7C6FF7" },
+  catActive: { backgroundColor: C.kelp, borderColor: C.kelp },
   catEmoji: { fontSize: 14, marginRight: 4 },
-  catText: { color: "#888", fontSize: 12 },
+  catText: { color: C.textMid, fontSize: 12 },
   createBtn: {
-    backgroundColor: "#7C6FF7",
+    backgroundColor: C.kelp,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
     marginTop: 16,
   },
-  createBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  createBtnText: { color: C.textOnKelp, fontSize: 15, fontWeight: "700" },
   goalCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     borderRadius: 14,
     padding: 16,
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: C.cream,
   },
-  goalCardTitle: { color: "#fff", fontSize: 16, fontWeight: "600", flex: 1 },
+  goalCardTitle: {
+    color: C.textDark,
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+  },
   bar: {
     height: 6,
-    backgroundColor: "#333",
+    backgroundColor: C.parchment,
     borderRadius: 3,
     marginTop: 10,
     overflow: "hidden",
   },
-  barFill: { height: 6, backgroundColor: "#7C6FF7", borderRadius: 3 },
-  barProg: { color: "#888", fontSize: 12, marginTop: 6 },
+  barFill: { height: 6, backgroundColor: C.kelp, borderRadius: 3 },
+  barProg: { color: C.textLight, fontSize: 12, marginTop: 6 },
   logBtn: {
-    backgroundColor: "#2a2a4a",
+    backgroundColor: C.kelp + "20",
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 10,
   },
-  logBtnText: { color: "#7C6FF7", fontSize: 14, fontWeight: "600" },
+  logBtnText: { color: C.kelp, fontSize: 14, fontWeight: "600" },
 
   // Assignments
   syncBtn: {
-    backgroundColor: "#2a2a4a",
+    backgroundColor: C.kelp + "20",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
-  syncBtnText: { color: "#7C6FF7", fontSize: 12, fontWeight: "600" },
-  noData: { color: "#666", fontSize: 14, marginTop: 8 },
+  syncBtnText: { color: C.kelp, fontSize: 12, fontWeight: "600" },
+  noData: { color: C.textLight, fontSize: 14, marginTop: 8 },
   assignCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: C.cardBg,
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: C.cream,
   },
   assignHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
-  assignTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  assignCourse: { color: "#888", fontSize: 13, marginTop: 2 },
+  assignTitle: { color: C.textDark, fontSize: 16, fontWeight: "600" },
+  assignCourse: { color: C.textLight, fontSize: 13, marginTop: 2 },
   dueBadge: {
-    backgroundColor: "#2a2a4a",
+    backgroundColor: C.kelp + "20",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
-  dueUrgent: { backgroundColor: "#E5393530" },
-  dueText: { color: "#7C6FF7", fontSize: 11, fontWeight: "700" },
+  dueUrgent: { backgroundColor: C.danger + "20" },
+  dueText: { color: C.kelp, fontSize: 11, fontWeight: "700" },
   planBox: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#333",
+    borderTopColor: C.border,
   },
-  planHeader: { color: "#888", fontSize: 13, marginBottom: 8 },
+  planHeader: { color: C.textLight, fontSize: 13, marginBottom: 8 },
   subtask: { flexDirection: "row", gap: 8, marginVertical: 4 },
-  subtaskNum: { color: "#7C6FF7", fontSize: 13, fontWeight: "700", width: 20 },
-  subtaskTitle: { color: "#ccc", fontSize: 14, fontWeight: "600" },
-  subtaskDesc: { color: "#888", fontSize: 12, marginTop: 2 },
-  link: { color: "#7C6FF7", fontSize: 12, marginTop: 4 },
+  subtaskNum: { color: C.kelp, fontSize: 13, fontWeight: "700", width: 20 },
+  subtaskTitle: { color: C.textDark, fontSize: 14, fontWeight: "600" },
+  subtaskDesc: { color: C.textLight, fontSize: 12, marginTop: 2 },
+  link: { color: C.kelp, fontSize: 12, marginTop: 4 },
   planEncourage: {
-    color: "#888",
+    color: C.textLight,
     fontSize: 13,
     marginTop: 10,
     fontStyle: "italic",
   },
   planBtn: {
-    backgroundColor: "#2a2a4a",
+    backgroundColor: C.kelp + "20",
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
     marginTop: 12,
   },
-  planBtnText: { color: "#7C6FF7", fontSize: 14, fontWeight: "600" },
+  planBtnText: { color: C.kelp, fontSize: 14, fontWeight: "600" },
 
   // Encouragement
   encourageCard: {
-    backgroundColor: "#1a1a2a",
+    backgroundColor: C.cardBg,
     borderRadius: 14,
     padding: 20,
     marginTop: 20,
     borderWidth: 1,
-    borderColor: "#2a2a4a",
+    borderColor: C.kelp + "40",
   },
   encourageText: {
-    color: "#ccc",
+    color: C.textDark,
     fontSize: 15,
     lineHeight: 22,
     fontStyle: "italic",
   },
-  encourageFrom: { color: "#7C6FF7", fontSize: 13, marginTop: 10 },
+  encourageFrom: { color: C.kelp, fontSize: 13, marginTop: 10 },
   encourageBtn: {
-    backgroundColor: "#1a1a2a",
+    backgroundColor: C.cardBg,
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: "center",
     marginTop: 20,
     borderWidth: 1,
-    borderColor: "#2a2a4a",
+    borderColor: C.kelp + "40",
   },
-  encourageBtnText: { color: "#7C6FF7", fontSize: 15, fontWeight: "600" },
+  encourageBtnText: { color: C.kelp, fontSize: 15, fontWeight: "600" },
 
   // Empty states
-  empty: { color: "#666", textAlign: "center", marginTop: 40 },
-  emptyCard: { alignItems: "center", marginTop: 60 },
+  empty: { color: C.textLight, textAlign: "center", marginTop: 40 },
+  emptyCard: {
+    alignItems: "center",
+    marginTop: 60,
+    padding: 20,
+  },
   emptyTitle: {
-    color: "#fff",
+    color: C.textDark,
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 12,
   },
-  emptyHint: { color: "#888", fontSize: 14, marginTop: 6 },
+  emptyHint: { color: C.textLight, fontSize: 14, marginTop: 6 },
 });

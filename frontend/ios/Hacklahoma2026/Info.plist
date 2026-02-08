@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Hacklahoma2026</string>
+	<string>Trail</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,6 +47,8 @@
 	</dict>
 	<key>NSFamilyControlsUsageDescription</key>
 	<string>Trail needs Screen Time access to help you stay focused and nudge you when you open distracting apps.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Trail reads your fitness data to auto-track goals like steps, exercise, and sleep.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>

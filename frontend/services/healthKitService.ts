@@ -18,7 +18,9 @@ export type HealthMetric =
   | "water_intake"
   | "resting_heart_rate"
   | "hrv"
-  | "vo2max";
+  | "vo2max"
+  | "manual"
+  | "screentime";
 
 interface MetricDef {
   hkType: string;
@@ -29,7 +31,7 @@ interface MetricDef {
   period: "daily" | "weekly";
 }
 
-export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
+export const METRIC_DEFS: Record<string, MetricDef> = {
   steps: {
     hkType: "steps",
     unit: "steps",
@@ -56,7 +58,7 @@ export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
   },
   stand_hours: {
     hkType: "stand_hours",
-    unit: "count",
+    unit: "hrs",
     label: "Stand Hours",
     emoji: "🧍",
     defaultTarget: 8,
@@ -72,7 +74,7 @@ export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
   },
   flights_climbed: {
     hkType: "flights_climbed",
-    unit: "count",
+    unit: "flights",
     label: "Flights Climbed",
     emoji: "🪜",
     defaultTarget: 10,
@@ -80,7 +82,7 @@ export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
   },
   workout_count: {
     hkType: "workout",
-    unit: "count",
+    unit: "workouts",
     label: "Workouts",
     emoji: "💪",
     defaultTarget: 4,
@@ -88,7 +90,7 @@ export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
   },
   sleep_duration: {
     hkType: "sleep",
-    unit: "hr",
+    unit: "hrs",
     label: "Sleep (hours)",
     emoji: "😴",
     defaultTarget: 7,
@@ -104,7 +106,7 @@ export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
   },
   water_intake: {
     hkType: "water_intake",
-    unit: "fl_oz",
+    unit: "fl oz",
     label: "Water (fl oz)",
     emoji: "💧",
     defaultTarget: 64,
@@ -137,7 +139,7 @@ export const METRIC_DEFS: Record<HealthMetric, MetricDef> = {
 };
 
 // Permission types needed per metric
-const READ_TYPES: Record<HealthMetric, string[]> = {
+const READ_TYPES: Record<string, string[]> = {
   steps: ["steps"],
   active_calories: ["active_calories"],
   exercise_minutes: ["exercise_minutes"],
@@ -153,6 +155,15 @@ const READ_TYPES: Record<HealthMetric, string[]> = {
   vo2max: ["vo2max"],
 };
 
+export interface ActivitySummary {
+  activeCalories: number;
+  exerciseMinutes: number;
+  standHours: number;
+  moveGoal: number;
+  exerciseGoal: number;
+  standGoal: number;
+}
+
 class HealthKitService {
   private authorized = false;
 
@@ -163,7 +174,14 @@ class HealthKitService {
   async requestAuth(metrics: HealthMetric[]): Promise<boolean> {
     if (!this.isAvailable()) return false;
     try {
-      const types = [...new Set(metrics.flatMap((m) => READ_TYPES[m]))];
+      const types = [
+        ...new Set(
+          metrics
+            .filter((m) => m !== "manual" && m !== "screentime")
+            .flatMap((m) => READ_TYPES[m] || []),
+        ),
+      ];
+      if (types.length === 0) return true;
       this.authorized = await TrailHealthKit.requestAuthorization(types);
       return this.authorized;
     } catch {
@@ -172,9 +190,11 @@ class HealthKitService {
   }
 
   async queryMetric(metric: HealthMetric, date?: Date): Promise<number> {
-    if (!this.isAvailable()) return 0;
+    if (!this.isAvailable() || metric === "manual" || metric === "screentime")
+      return 0;
     const d = (date || new Date()).toISOString();
     const def = METRIC_DEFS[metric];
+    if (!def) return 0;
 
     try {
       switch (metric) {
@@ -205,8 +225,10 @@ class HealthKitService {
     startDate: Date,
     endDate: Date,
   ): Promise<number> {
-    if (!this.isAvailable()) return 0;
+    if (!this.isAvailable() || metric === "manual" || metric === "screentime")
+      return 0;
     const def = METRIC_DEFS[metric];
+    if (!def) return 0;
     try {
       if (metric === "workout_count") {
         return await TrailHealthKit.queryWorkoutCount(
@@ -222,6 +244,21 @@ class HealthKitService {
       );
     } catch {
       return 0;
+    }
+  }
+
+  /**
+   * Query Apple's Activity Summary — returns the user's Move/Exercise/Stand
+   * goals AND current progress. This is what the Apple Fitness rings show.
+   */
+  async queryActivitySummary(date?: Date): Promise<ActivitySummary | null> {
+    if (!this.isAvailable()) return null;
+    try {
+      const d = (date || new Date()).toISOString();
+      const result = await TrailHealthKit.queryActivitySummary(d);
+      return result || null;
+    } catch {
+      return null;
     }
   }
 }
