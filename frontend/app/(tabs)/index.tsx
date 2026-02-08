@@ -135,7 +135,7 @@ export default function HomeScreen() {
   const { assignments, refresh: refreshAssignments } = useAssignments();
 
   // 🔥 USE GLOBAL BANKED STEPS HOOK - updates automatically when goals are logged!
-  const { bankedSteps, refresh: refreshBankedStepsManual } = useBankedSteps();
+  const { bankedSteps, loading: bankedStepsLoading, refresh: refreshBankedStepsManual } = useBankedSteps();
 
   // Reload avatar when returning from Profile tab
   useFocusEffect(
@@ -445,6 +445,7 @@ export default function HomeScreen() {
           isTrailComplete={isTrailComplete}
           totalStepsInvested={completedTrailSteps}
           totalStepsNeeded={totalStepsAvailable}
+          loading={bankedStepsLoading}
         />
 
         {/* ═══ TRAIL PROGRESS ═══ */}

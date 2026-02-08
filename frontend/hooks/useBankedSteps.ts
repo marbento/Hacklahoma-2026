@@ -24,11 +24,15 @@ function notifyAll(steps: number) {
 // Global refresh function - can be called from ANYWHERE
 export async function refreshBankedSteps() {
   try {
+    console.log("🔄 Fetching banked steps from API...");
     const data = await getBankedSteps();
+    console.log("✅ Banked steps received:", data.banked_steps);
     notifyAll(data.banked_steps);
     return data.banked_steps;
   } catch (e) {
-    console.error("Failed to refresh banked steps:", e);
+    console.error("❌ Failed to refresh banked steps:", e);
+    // Keep the previous value instead of returning 0
+    console.log("⚠️ Keeping previous value:", globalBankedSteps);
     return globalBankedSteps;
   }
 }
@@ -40,10 +44,18 @@ export function useBankedSteps() {
 
   // Fetch initial banked steps
   const fetch = useCallback(async () => {
+    console.log("🎣 useBankedSteps - Starting fetch...");
     setLoading(true);
     try {
       const steps = await refreshBankedSteps();
+      console.log("✅ useBankedSteps - Got steps:", steps);
       setBankedSteps(steps);
+    } catch (error) {
+      console.error("❌ useBankedSteps - Fetch error:", error);
+      // On error, show 0 instead of keeping stale data for first load
+      if (globalBankedSteps === 0) {
+        setBankedSteps(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -52,7 +64,9 @@ export function useBankedSteps() {
   // Subscribe to global changes
   useEffect(() => {
     const unsubscribe = subscribe((steps) => {
+      console.log("📡 useBankedSteps - Received update:", steps);
       setBankedSteps(steps);
+      setLoading(false); // Stop loading when we get an update
     });
     return unsubscribe;
   }, []);

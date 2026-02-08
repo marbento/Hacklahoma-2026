@@ -263,6 +263,7 @@ interface TrailCardProps {
   isTrailComplete?: boolean;
   totalStepsInvested?: number; // Total steps taken across all trails
   totalStepsNeeded?: number; // Total steps needed to complete all trails
+  loading?: boolean; // Loading state for banked steps
 }
 
 const TrailCard: React.FC<TrailCardProps> = ({
@@ -276,6 +277,7 @@ const TrailCard: React.FC<TrailCardProps> = ({
   isTrailComplete = false,
   totalStepsInvested = 0,
   totalStepsNeeded = 0,
+  loading = false,
 }) => {
   // Convert avatar string IDs to indices for PixelAvatar
   const bodyIndex = avatarConfig.body === "body1" ? 0 : 1;
@@ -404,7 +406,7 @@ const TrailCard: React.FC<TrailCardProps> = ({
         </View>
         <View style={st.stepsBadge}>
           <Text style={{ fontSize: 16 }}>👣</Text>
-          <Text style={st.stepsValue}>{bankedSteps}</Text>
+          <Text style={st.stepsValue}>{loading ? "..." : bankedSteps}</Text>
         </View>
       </View>
 
