@@ -20,6 +20,60 @@
 }
 
 @layer utilities {
+  @keyframes sprite-step {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: var(--sprite-shift) 0;
+    }
+  }
+
+  @keyframes finale-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 6px rgba(61, 71, 44, 0.45));
+      transform: scale(1);
+    }
+    50% {
+      filter: drop-shadow(0 0 18px rgba(61, 71, 44, 0.8));
+      transform: scale(1.06);
+    }
+  }
+
+  .finale-glow {
+    animation: finale-glow 1.2s ease-in-out infinite;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-20px) rotate(0deg);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(520px) rotate(220deg);
+      opacity: 0;
+    }
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 8px;
+    height: 12px;
+    background: #c8a76a;
+    border-radius: 2px;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-iteration-count: infinite;
+  }
+
+  .app-text * {
+    color: #3d472c !important;
+  }
+
   .font-editorial {
     font-family: 'Spectral', serif;
   }
