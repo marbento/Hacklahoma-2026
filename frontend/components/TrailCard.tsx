@@ -261,6 +261,8 @@ interface TrailCardProps {
   avatarConfig: AvatarConfig;
   currentTrailIndex?: number;
   isTrailComplete?: boolean;
+  totalStepsInvested?: number; // Total steps taken across all trails
+  totalStepsNeeded?: number; // Total steps needed to complete all trails
 }
 
 const TrailCard: React.FC<TrailCardProps> = ({
@@ -272,6 +274,8 @@ const TrailCard: React.FC<TrailCardProps> = ({
   avatarConfig,
   currentTrailIndex = 0,
   isTrailComplete = false,
+  totalStepsInvested = 0,
+  totalStepsNeeded = 0,
 }) => {
   // Convert avatar string IDs to indices for PixelAvatar
   const bodyIndex = avatarConfig.body === "body1" ? 0 : 1;
@@ -354,11 +358,27 @@ const TrailCard: React.FC<TrailCardProps> = ({
     }
   }, [avatarPos, isMoving, avatarX, avatarY]);
 
-  const trailProgressPct = Math.round(
-    (currentTile / Math.max(1, maxTile)) * 100,
-  );
+  // Calculate overall progress across ALL trails (like reference App.jsx)
+  const overallProgressPct =
+    totalStepsNeeded > 0
+      ? Math.max(
+          0,
+          Math.min(100, Math.round((totalStepsInvested / totalStepsNeeded) * 100)),
+        )
+      : 0;
 
   const isFinale = currentTile === maxTile;
+
+  // 🔥 DEBUG: Log total steps to ensure they're being passed correctly
+  useEffect(() => {
+    console.log("🥾 TrailCard - Total Steps:", {
+      totalStepsInvested,
+      totalStepsNeeded,
+      overallProgressPct,
+      currentTile,
+      currentTrailIndex,
+    });
+  }, [totalStepsInvested, totalStepsNeeded, overallProgressPct, currentTile, currentTrailIndex]);
 
   // Confetti pieces configuration
   const confettiPieces = [
@@ -375,9 +395,12 @@ const TrailCard: React.FC<TrailCardProps> = ({
   return (
     <View style={st.card}>
       <View style={st.cardHeader}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={st.cardLabel}>YOUR JOURNEY</Text>
           <Text style={st.cardTitle}>The Trail 🥾</Text>
+          <Text style={st.totalStepsText}>
+            {totalStepsInvested}/{totalStepsNeeded} steps • {overallProgressPct}%
+          </Text>
         </View>
         <View style={st.stepsBadge}>
           <Text style={{ fontSize: 16 }}>👣</Text>
@@ -454,19 +477,19 @@ const TrailCard: React.FC<TrailCardProps> = ({
           ))}
       </ImageBackground>
 
-      {/* Trail Progress Summary */}
+      {/* Trail Progress Summary - Shows TOTAL steps across ALL trails */}
       <View style={st.progressSection}>
         <View style={st.progressCard}>
           <Text style={st.progressLabel}>PROGRESS</Text>
           <View style={st.progressStats}>
             <Text style={st.progressText}>
-              {currentTile}/{maxTile} steps
+              {totalStepsInvested}/{totalStepsNeeded} steps
             </Text>
-            <Text style={st.progressPercent}>{trailProgressPct}%</Text>
+            <Text style={st.progressPercent}>{overallProgressPct}% completed</Text>
           </View>
           <View style={st.progressBarContainer}>
             <View
-              style={[st.progressBar, { width: `${trailProgressPct}%` as any }]}
+              style={[st.progressBar, { width: `${overallProgressPct}%` as any }]}
             />
           </View>
         </View>
@@ -521,6 +544,13 @@ const st = StyleSheet.create({
     color: C.kelp,
     fontWeight: "600",
     marginTop: 4,
+  },
+  totalStepsText: {
+    fontSize: 13,
+    color: C.textLight,
+    fontWeight: "600",
+    marginTop: 6,
+    letterSpacing: 0.3,
   },
   trailContainer: {
     height: 450,

@@ -13,6 +13,7 @@ import {
   updateGoal,
 } from "../api/goals";
 import { ActivitySummary, healthKit } from "../services/healthKitService";
+import { refreshBankedSteps } from "./useBankedSteps";
 
 export function useGoals() {
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -238,6 +239,11 @@ export function useGoals() {
     ): Promise<GoalLogResult> => {
       const res = await logGoalProgress(goalId, value, notes, "manual");
       await fetch(true);
+
+      // 🔥 REFRESH BANKED STEPS IMMEDIATELY AFTER LOGGING!
+      // This updates the banked steps globally so all screens see the change
+      await refreshBankedSteps();
+
       return res;
     },
     [fetch],
@@ -263,6 +269,9 @@ export function useGoals() {
     setRefreshing(true);
     await syncHealthKit();
     await fetch();
+
+    // Also refresh banked steps when goals are refreshed
+    await refreshBankedSteps();
   }, [fetch, syncHealthKit]);
 
   return {

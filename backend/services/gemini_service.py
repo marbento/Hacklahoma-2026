@@ -10,8 +10,11 @@ settings = get_settings()
 
 def _get_model():
     if not settings.gemini_api_key:
+        print("❌ ERROR: GEMINI_API_KEY environment variable is not set!")
         raise ValueError("GEMINI_API_KEY environment variable is not set")
+    print(f"✅ Gemini API key found (length: {len(settings.gemini_api_key)})")
     genai.configure(api_key=settings.gemini_api_key)
+    print("✅ Using Gemini model: gemini-2.5-flash")
     return genai.GenerativeModel("gemini-2.5-flash")
 
 
