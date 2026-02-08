@@ -1,9 +1,5 @@
 import { useRef, useState } from 'react'
 // Import your SVG assets here
-import backgroundImage from './assets/background.png'
-import detourImage from './assets/detour.png'
-import trail1Image from './assets/trail1.png'
-import trail2Image from './assets/trail2.png'
 import b1c1DataRaw from './assets/b1c1?raw'
 import b1c1Sheet from './assets/b1c1sheet.png'
 import b1c2DataRaw from './assets/b1c2?raw'
@@ -12,12 +8,16 @@ import b2c1DataRaw from './assets/b2c1.json?raw'
 import b2c1Sheet from './assets/b2c1sheet .png'
 import b2c2DataRaw from './assets/b2c2.json?raw'
 import b2c2Sheet from './assets/b2c2sheet.png'
+import backgroundImage from './assets/background.png'
 import body1Svg from './assets/body1.svg'
 import body2Svg from './assets/body2.svg'
 import clothing1Svg from './assets/cloth1.svg'
 import clothing2Svg from './assets/cloth2.svg'
+import detourImage from './assets/detour.png'
 import hair1Svg from './assets/hair1.svg'
 import hair2Svg from './assets/hair2.svg'
+import trail1Image from './assets/trail1.png'
+import trail2Image from './assets/trail2.png'
 
 const b1c1Data = JSON.parse(b1c1DataRaw)
 const b1c2Data = JSON.parse(b1c2DataRaw)
