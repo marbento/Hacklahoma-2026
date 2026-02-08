@@ -47,6 +47,7 @@ function App() {
   const [selectedBody, setSelectedBody] = useState(0)
   const [selectedClothing, setSelectedClothing] = useState(0)
   const [reportRange, setReportRange] = useState('week')
+  const [integrationTab, setIntegrationTab] = useState('push')
   const [savedAvatar, setSavedAvatar] = useState({
     body: 0,
     hair: 0,
@@ -85,6 +86,16 @@ function App() {
     { title: 'Research notes tagged', source: 'Notion', steps: 2 },
   ]
   const completedTaskSteps = completedTasks.reduce((sum, task) => sum + task.steps, 0)
+  const pushApps = [
+    { name: 'Notion', detail: 'Tasks', badge: 'N', color: 'bg-[#e8e0d1] text-[#6f6a5c]', connected: true },
+    { name: 'Google Calendar', detail: 'Events', badge: 'G', color: 'bg-[#dfe6cf] text-[#6f7758]', connected: true },
+    { name: 'Microsoft 365', detail: 'Tasks', badge: 'M', color: 'bg-[#d9e1cf] text-[#6f7758]', connected: false },
+  ]
+  const stayOffApps = [
+    { name: 'Instagram', detail: 'Usage signals', badge: 'I', color: 'bg-[#ecd9c8] text-[#b07d5b]', connected: false },
+    { name: 'YouTube', detail: 'Watch time', badge: 'Y', color: 'bg-[#f1d7c5] text-[#b07d5b]', connected: false },
+    { name: 'Reddit', detail: 'Scroll loops', badge: 'R', color: 'bg-[#e8e0d1] text-[#6f6a5c]', connected: false },
+  ]
   const initialSteps = 30 // Test banked steps
   const hasDetour = netMinutes < 0
   const detourNodes = [
@@ -693,15 +704,44 @@ function App() {
 
                     {/* Integrations Section */}
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#7c7666]">Integrations</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#7c7666]">
+                          {integrationTab === 'push' ? 'Pull Apps' : 'Push Apps'}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition ${
+                              integrationTab === 'push'
+                                ? 'border-[#3b3528] bg-[#3b3528] text-[#fbf8ef]'
+                                : 'border-[#d8d0c2] text-[#6f6a5c]'
+                            }`}
+                            onClick={() => setIntegrationTab('push')}
+                            aria-label="Show push apps"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition ${
+                              integrationTab === 'off'
+                                ? 'border-[#3b3528] bg-[#3b3528] text-[#fbf8ef]'
+                                : 'border-[#d8d0c2] text-[#6f6a5c]'
+                            }`}
+                            onClick={() => setIntegrationTab('off')}
+                            aria-label="Show stay off apps"
+                          >
+                            ⦸
+                          </button>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-[10px] text-[#6f6a5c]">
+                        {integrationTab === 'push'
+                          ? 'Pull apps are apps you want. Push apps are apps you want to stay away from.'
+                          : 'Pull apps are apps you want. Push apps are apps you want to stay away from.'}
+                      </p>
                       <div className="mt-4 space-y-3">
-                        {[
-                          { name: 'Notion', detail: 'Tasks', badge: 'N', color: 'bg-[#e8e0d1] text-[#6f6a5c]', connected: true },
-                          { name: 'Google Calendar', detail: 'Events', badge: 'G', color: 'bg-[#dfe6cf] text-[#6f7758]', connected: true },
-                          { name: 'Canvas', detail: 'Assignments', badge: 'C', color: 'bg-[#f1d7c5] text-[#b07d5b]', connected: false },
-                          { name: 'Instagram', detail: 'Usage signals', badge: 'I', color: 'bg-[#ecd9c8] text-[#b07d5b]', connected: false },
-                          { name: 'Microsoft 365', detail: 'Tasks', badge: 'M', color: 'bg-[#d9e1cf] text-[#6f7758]', connected: false },
-                        ].map((item) => (
+                        {(integrationTab === 'push' ? pushApps : stayOffApps).map((item) => (
                           <div
                             key={item.name}
                             className="flex items-center gap-3 rounded-2xl border border-[#d8d0c2] bg-[#fbf8ef]/75 px-4 py-3 shadow-[0_10px_18px_rgba(79,70,51,0.18)]"
@@ -962,7 +1002,7 @@ function App() {
                       <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="2.5" />
                       <path d="M9 12h6M12 9v6" strokeWidth="2.5" />
                     </svg>
-                      <span className="text-[9px] font-medium">Gear</span>
+                      <span className="text-[9px] font-medium">Apps</span>
                     </button>
                     <button
                       className={`flex flex-col items-center gap-0.5 rounded-lg border p-1 shadow-sm transition-all ${
